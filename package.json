@@ -1,0 +1,48 @@
+{
+    "name": "@lucania/toolbox",
+    "version": "1.0.0",
+    "description": "A utility library delivering many quality of life improvements to both browser and node environments.",
+    "exports": {
+        "./shared": "./build/shared/index.js",
+        "./client": "./build/client/index.js",
+        "./server": "./build/server/index.js"
+    },
+    "files": [
+        "/build"
+    ],
+    "scripts": {
+        "setup": "npm install",
+        "clean": "erase /F /S /Q build",
+        "build": "npx rollup --bundleConfigAsCjs --config rollup.config.js",
+        "build:clean": "npm run clean && npm run build",
+        "build:watch": "npx rollup --watch --bundleConfigAsCjs --config rollup.config.js",
+        "push": "npm run build:clean && npm publish --access public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/JeremyBankes/toolbox.git"
+    },
+    "keywords": [
+        "Tools",
+        "JavaScript",
+        "TypeScript",
+        "Utility"
+    ],
+    "author": "Lucania Software",
+    "license": "GPL-3.0",
+    "bugs": {
+        "url": "https://github.com/JeremyBankes/toolbox/issues"
+    },
+    "homepage": "https://github.com/JeremyBankes/toolbox#readme",
+    "devDependencies": {
+        "@babel/preset-env": "^7.22.5",
+        "@rollup/plugin-babel": "^6.0.3",
+        "@rollup/plugin-typescript": "^11.1.1",
+        "@types/node": "^20.2.5",
+        "nodemon": "^2.0.22",
+        "rollup": "^3.24.0",
+        "ts-loader": "^9.4.3",
+        "tslib": "^2.5.3",
+        "typescript": "^5.1.3"
+    }
+}
