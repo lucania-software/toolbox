@@ -39,7 +39,7 @@ Data.assert(weatherType === "sunny", "The weather is too bad to go shopping!");
 throw new Error.Fatal("Something unrecoverably bad happened!");
 
 // Example usage of functions from the "Text" namespace.
-const women = ["Catherine", "Kathrynne"];
+const women = ["Catherine", "Kathryn"];
 const distance = Text.getLevenshteinDistance(women[0], women[1]);
 const message = `${Text.toPrettyList(women)} have names that sound the same, but differ by ${distance} characters in spelling!`;
 
