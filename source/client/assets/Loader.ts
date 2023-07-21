@@ -1,4 +1,4 @@
-import { Data, RegularExpression } from "@jeremy-bankes/toolbox/shared";
+import { Data, RegularExpression } from "@lucania/toolbox/shared";
 import { ResourceLoader } from "./AssetManager";
 
 export namespace Loader {

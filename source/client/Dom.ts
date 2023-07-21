@@ -1,4 +1,4 @@
-import { Data } from "@jeremy-bankes/toolbox/shared";
+import { Data } from "@lucania/toolbox/shared";
 
 type OnDomReadyCallback = (mapping: Dom.ElementMapping) => void | Promise<void>;
 type OnDomErrorCallback = (error: Error, mapping: Dom.ElementMapping) => void;

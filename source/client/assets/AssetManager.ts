@@ -1,4 +1,4 @@
-import { Data, Error, RegularExpression } from "@jeremy-bankes/toolbox/shared";
+import { Data, Error, RegularExpression } from "@lucania/toolbox/shared";
 import { Loader } from "./Loader";
 
 export type ResourceLoader<ResourceType> = {

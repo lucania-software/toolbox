@@ -3,9 +3,9 @@ A utility library delivering many quality of life improvements to both browser a
 
 This project has 3 sections.
 
-* __Shared__ - _@jeremy-bankes/toolbox/shared_ - Contains general features purely for manipulating data and works irrespective of environment, I.E. runs in both the client and server.
-* __Server__ - _@jeremy-bankes/toolbox/server_ - Contains features to aid in server-side development and requires a node environment to run. Do not import this library in your client-side codebase.
-* __Client__ - _@jeremy-bankes/toolbox/client_ - Contains features to aid in client-side development and requires a browser environment to run. Do not import this library in your server-side codebase.
+* __Shared__ - _@lucania/toolbox/shared_ - Contains general features purely for manipulating data and works irrespective of environment, I.E. runs in both the client and server.
+* __Server__ - _@lucania/toolbox/server_ - Contains features to aid in server-side development and requires a node environment to run. Do not import this library in your client-side codebase.
+* __Client__ - _@lucania/toolbox/client_ - Contains features to aid in client-side development and requires a browser environment to run. Do not import this library in your server-side codebase.
 
 # Getting started
 
@@ -14,7 +14,7 @@ This project has 3 sections.
 This project uses NPM, thus can be installed with...
 
 ```bash
-npm install --save @jeremy-bankes/toolbox
+npm install --save @lucania/toolbox
 ```
 
 ## Use the libraries
@@ -23,7 +23,7 @@ npm install --save @jeremy-bankes/toolbox
 
 ```javascript
 // "Shared" currently exports 3 namespaces
-import { Data, Error, Text } from "@jeremy-bankes/toolbox/shared";
+import { Data, Error, Text } from "@lucania/toolbox/shared";
 
 // Example usage of functions from the "Data" namespace.
 const weatherReport = {
@@ -48,7 +48,7 @@ const message = `${Text.toPrettyList(women)} have names that sound the same, but
 
 ### Example usage of the "Server" library.
 ```javascript
-import { ConsoleColor, File } from "@jeremy-bankes/toolbox/server";
+import { ConsoleColor, File } from "@lucania/toolbox/server";
 
 // Example usage of functions from the "ConsoleColor" namespace.
 const { red, green, blue, reset } = ConsoleColor.Common;
@@ -64,7 +64,7 @@ await File.write("C:/Fiona Dossier.txt", fiona, "utf8");
 
 ### Example usage of the "Client" library.
 ```javascript
-import { Network, Dom, Cookies  } from "@jeremy-bankes/toolbox/client";
+import { Network, Dom, Cookies  } from "@lucania/toolbox/client";
 
 // I got tired, so gave up on this section. I'll get to it... eventually.
 // Just look at the source...

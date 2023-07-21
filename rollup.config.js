@@ -19,7 +19,7 @@ export default [
     },
     {
         input: "source/client/index.ts",
-        external: ["@jeremy-bankes/toolbox/shared"],
+        external: ["@lucania/toolbox/shared"],
         output: {
             file: "build/client/index.js",
             name: "Schema",
@@ -34,7 +34,7 @@ export default [
     },
     {
         input: "source/server/index.ts",
-        external: ["fs", "path"],
+        external: ["fs", "path", "child_process"],
         output: {
             file: "build/server/index.js",
             name: "Schema",

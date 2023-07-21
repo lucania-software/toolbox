@@ -1,4 +1,4 @@
-import { Data } from "@jeremy-bankes/toolbox/shared";
+import { Data } from "@lucania/toolbox/shared";
 
 enum RequestMethod {
     GET = "GET", HEAD = "HEAD", OPTIONS = "OPTIONS", PATCH = "PATCH",

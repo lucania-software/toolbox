@@ -1,4 +1,4 @@
-import { Data } from "@jeremy-bankes/toolbox/shared";
+import { Data } from "@lucania/toolbox/shared";
 
 export type CookieOptions = {
     path?: string,
