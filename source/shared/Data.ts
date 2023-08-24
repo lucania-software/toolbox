@@ -255,7 +255,7 @@ export namespace Data {
      * @param object2 The second object to compare.
      * @returns true if all of the nested properties of object1 are equal to that of object2.
      */
-    export function deepEquals(object1: object, object2: object) {
+    export function deepEquals(object1: any, object2: any) {
         const object1Keys = Object.keys(object1);
         const object2Keys = Object.keys(object2);
         if (object1Keys.length !== object2Keys.length) {
