@@ -256,23 +256,30 @@ export namespace Data {
      * @returns true if all of the nested properties of object1 are equal to that of object2.
      */
     export function deepEquals(object1: any, object2: any) {
-        const object1Keys = Object.keys(object1);
-        const object2Keys = Object.keys(object2);
-        if (object1Keys.length !== object2Keys.length) {
-            return false;
-        }
-        for (const key of object1Keys) {
-            const value1 = object1[key as keyof typeof object1];
-            const value2 = object2[key as keyof typeof object2];
-            const areObjects = (typeof value1 === "object" && value1 !== null) && (typeof value2 === "object" && value2 !== null);
-            if (
-                areObjects && !Data.deepEquals(value1, value2) ||
-                !areObjects && value1 !== value2
-            ) {
+        if (typeof object1 === "object" && typeof object2 === "object") {
+            if (object1 === null || object2 === null) {
+                return object1 === object2;
+            }
+            const object1Keys = Object.keys(object1);
+            const object2Keys = Object.keys(object2);
+            if (object1Keys.length !== object2Keys.length) {
                 return false;
             }
+            for (const key of object1Keys) {
+                const value1 = object1[key as keyof typeof object1];
+                const value2 = object2[key as keyof typeof object2];
+                const areObjects = (typeof value1 === "object" && value1 !== null) && (typeof value2 === "object" && value2 !== null);
+                if (
+                    areObjects && !Data.deepEquals(value1, value2) ||
+                    !areObjects && value1 !== value2
+                ) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return object1 === object2;
         }
-        return true;
     }
 
     export function assert(condition: boolean, message: string = "Assertion failed."): asserts condition {
