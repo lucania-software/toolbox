@@ -1,20 +1,20 @@
 import { Error } from "./Error";
 
-type Present<Value> = Exclude<Exclude<Value, undefined>, null>;
+export type Present<Value> = Exclude<Value, null | undefined>;
 
-type ObjectWithPath<Path extends string, Type = any> = (
+export type ObjectWithPath<Path extends string, Type = any> = (
     Path extends `${infer Head}.${infer Tail}` ? (
-        { [Key in Head]: ObjectWithPath<Tail, Type> }
+        Record<Head, ObjectWithPath<Tail, Type>>
     ) : (
-        { [Key in Path]: Present<Type> }
+        Record<Path, Present<Type>>
     )
 );
 
-type TypeAtPath<Target, Path extends string> = (
+export type TypeAtPath<Target, Path extends string> = (
     Path extends `${infer Head}.${infer Tail}` ? (
-        Target extends { [Key in Head]: any } ? TypeAtPath<Target[Head], Tail> : undefined
+        Head extends keyof Target ? TypeAtPath<Target[Head], Tail> : undefined
     ) : (
-        Target extends { [Key in Path]: any } ? Target[Path] : undefined
+        Target extends Record<string, any> ? Target[Path] : undefined
     )
 );
 
