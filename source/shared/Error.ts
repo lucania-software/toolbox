@@ -1,5 +1,5 @@
 /**
- * A set of semantic errors for your easy server side development!
+ * A set of semantic errors.
  */
 export namespace Error {
 

@@ -7,7 +7,7 @@ export default [
         input: "source/shared/index.ts",
         output: {
             file: "build/shared/index.js",
-            name: "Schema",
+            name: "LucaniaSharedToolbox",
             format: "cjs",
             sourcemap: false,
             exports: "named"
@@ -19,10 +19,10 @@ export default [
     },
     {
         input: "source/client/index.ts",
-        external: ["@jeremy-bankes/toolbox/shared"],
+        external: ["@lucania/toolbox/shared"],
         output: {
             file: "build/client/index.js",
-            name: "Schema",
+            name: "LucaniaClientToolbox",
             format: "cjs",
             sourcemap: false,
             exports: "named"
@@ -34,10 +34,10 @@ export default [
     },
     {
         input: "source/server/index.ts",
-        external: ["fs", "path"],
+        external: ["fs", "path", "child_process"],
         output: {
             file: "build/server/index.js",
-            name: "Schema",
+            name: "LucaniaServerToolbox",
             format: "cjs",
             sourcemap: false,
             exports: "named",
