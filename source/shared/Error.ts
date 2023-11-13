@@ -3,7 +3,7 @@
  */
 export namespace Error {
 
-    export const Original = global.Error;
+    export const Original = globalThis.Error;
 
     export class Named extends Original {
 

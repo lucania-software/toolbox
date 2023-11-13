@@ -90,6 +90,30 @@ export namespace Dom {
         return element;
     }
 
+    export type PopulationContext = { [Key: string]: PopulationContext | string };
+
+    export function populate(node: Node, context: PopulationContext) {
+        if (node.nodeName === "#text" && node.textContent) {
+            node.textContent = node.textContent.replace(/{% ([a-z_$][a-z0-9_.$]*) %}/gi, (_, path) => {
+                const value = Data.get(context, path, "");
+                Data.assert(typeof value === "string", `Expected string at path "${path}" in population context!`);
+                return value;
+            });
+        } else {
+            for (const childNode of node.childNodes) {
+                populate(childNode, context);
+            }
+        }
+    }
+
+    export function createFromTemplate(template: HTMLTemplateElement, context: PopulationContext) {
+        const content = template.content.cloneNode(true);
+        Dom.populate(content, context);
+        const fragment = document.createDocumentFragment();
+        fragment.append(content);
+        return fragment;
+    }
+
     /**
      * Checks to see if an element with the ID "elementId" exists in the DOM.
      * @param elementId The ID of an element to check the existance of.

@@ -143,7 +143,10 @@ export namespace Text {
             throw new Error(`Can only determine a number suffix for integers. Got "${value}".`);
         }
         const string = value.toFixed(0);
-        switch (value) {
+        if (value === 13) {
+            return string + "th";
+        }
+        switch (value % 10) {
             case 1: return string + "st";
             case 2: return string + "nd";
             case 3: return string + "rd";
