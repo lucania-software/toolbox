@@ -30,7 +30,14 @@ export namespace Dom {
      */
     export function onReady(callback: OnDomReadyCallback) {
         const mapping = Dom.getMapping();
-        const execute = () => Promise.resolve(callback(mapping)).catch((error) => _onErrorListeners.forEach(listener => listener(error, mapping)));
+        const execute = () => Promise.resolve(callback(mapping)).catch((error) => {
+            if (_onErrorListeners.length > 0) {
+                _onErrorListeners.forEach(listener => listener(error, mapping));
+            } else {
+                console.warn("No error handlers are supplied. It's a good idea to handle errors with Dom.onError.");
+                console.error(error);
+            }
+        });
         if (document.readyState === "complete") {
             execute();
         } else {

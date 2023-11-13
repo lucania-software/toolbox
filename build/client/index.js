@@ -783,9 +783,14 @@
       var mapping = Dom.getMapping();
       var execute = function execute() {
         return Promise.resolve(callback(mapping))["catch"](function (error) {
-          return _onErrorListeners.forEach(function (listener) {
-            return listener(error, mapping);
-          });
+          if (_onErrorListeners.length > 0) {
+            _onErrorListeners.forEach(function (listener) {
+              return listener(error, mapping);
+            });
+          } else {
+            console.warn("No error handlers are supplied. It's a good idea to handle errors with Dom.onError.");
+            console.error(error);
+          }
         });
       };
       if (document.readyState === "complete") {
