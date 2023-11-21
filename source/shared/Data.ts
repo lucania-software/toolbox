@@ -216,7 +216,7 @@ export namespace Data {
         const flattenedTarget: any = {};
         Data.walk(target, (_, property, path) => {
             if (typeof property === "object") {
-                if (!isPlain(property)) {
+                if (!isPlain(property, false)) {
                     flattenedTarget[path] = property;
                     return true;
                 }
