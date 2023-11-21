@@ -215,7 +215,12 @@ export namespace Data {
     export function flatten(target: any) {
         const flattenedTarget: any = {};
         Data.walk(target, (_, property, path) => {
-            if (!isPlain(property)) {
+            if (typeof property === "object") {
+                if (!isPlain(property)) {
+                    flattenedTarget[path] = property;
+                    return true;
+                }
+            } else {
                 flattenedTarget[path] = property;
                 return true;
             }
@@ -260,21 +265,13 @@ export namespace Data {
                         return false;
                     }
                 }
-                return true;
-            } else {
-                return true;
             }
+            return true;
         } else {
-            if (
+            return (
                 typeof target === "string" || typeof target === "number" || typeof target === "boolean" ||
                 typeof target === "undefined" || typeof target === "bigint" || target === null
-            ) {
-                return true;
-            }
-            if (target instanceof Date) {
-                return true;
-            }
-            return false;
+            );
         }
     }
 
