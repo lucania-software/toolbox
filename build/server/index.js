@@ -58,22 +58,38 @@ exports.File = void 0;
     }
     File.remove = remove;
     /**
-     * Copies a file from one path to another.
+     * Copies a file or directory structure recursively from one path to another.
      * @param fromPath The file to copy.
      * @param toPath The destination to paste to.
      */
     async function copy(fromPath, toPath) {
-        await new Promise((resolve, reject) => {
-            ensureDirectoryExists(Path.dirname(toPath)).then(() => {
-                FileSystem.copyFile(fromPath, toPath, (error) => {
-                    if (error === null) {
-                        resolve();
+        await new Promise(async (resolve, reject) => {
+            try {
+                await ensureDirectoryExists(Path.dirname(toPath));
+                const meta = await getMeta(fromPath);
+                if (meta.directory) {
+                    const copyTasks = [];
+                    const fileList = await listDirectory(fromPath);
+                    for (const file of fileList) {
+                        copyTasks.push(copy(Path.join(fromPath, file), Path.join(toPath, file)));
                     }
-                    else {
-                        reject(error);
-                    }
-                });
-            });
+                    await Promise.all(copyTasks);
+                    resolve();
+                }
+                else {
+                    FileSystem.copyFile(fromPath, toPath, (error) => {
+                        if (error === null) {
+                            resolve();
+                        }
+                        else {
+                            reject(error);
+                        }
+                    });
+                }
+            }
+            catch (error) {
+                reject(error);
+            }
         });
     }
     File.copy = copy;

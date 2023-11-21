@@ -1373,7 +1373,7 @@
     /**
      * Retrieves a cookie by name.
      * @param name The name of the cookie to get the value of.
-     * @returns The cookie named {@link name}, or null if it does not exist.
+     * @returns The cookie named {@link name}, or undefined if it does not exist.
      */
     function get(name) {
       var valueStrings = document.cookie.split(";");
@@ -1395,21 +1395,21 @@
       } finally {
         _iterator.f();
       }
-      return null;
+      return undefined;
     }
     Cookies.get = get;
     /**
      * Retrieves a JSON cookie by name.
      * @param name The name of the cookie to get the value of.
-     * @returns The cookie named {@link name}, or null if it does not exist, or cannot be parsed as JSON.
+     * @returns The cookie named {@link name}, or undefined if it does not exist, or cannot be parsed as JSON.
      */
     function getJson(name) {
       try {
         var cookie = Cookies.get(name);
-        shared.Data.assert(cookie !== null);
+        shared.Data.assert(cookie !== undefined);
         return JSON.parse(cookie);
       } catch (error) {
-        return null;
+        return undefined;
       }
     }
     Cookies.getJson = getJson;
@@ -1459,7 +1459,7 @@
       if (shared.Data.has(options, "expires")) {
         pieces.push("expires=".concat(options.expires.toUTCString()));
       }
-      if (shared.Data.has(options, "pasecureth") && options.secure) {
+      if (shared.Data.has(options, "secure") && options.secure) {
         pieces.push("secure");
       }
       if (shared.Data.has(options, "sameSite")) {

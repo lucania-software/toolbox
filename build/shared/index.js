@@ -1062,14 +1062,13 @@
           Data.set(target[key], pieces.join("."), value);
         }
       }
-      return true;
     }
     Data.set = set;
     /**
      * Removes a value at {@link pieces} in {@link target}.
      * @param target The target object.
      * @param pieces The path of the value to remove from {@link target}.
-     * @returns The removed value.
+     * @returns The removed value or undefined if the value couldn't be found.
      */
     function remove(target, path) {
       var pieces = path === "" ? [] : path.split(".");
@@ -1164,12 +1163,43 @@
       return object;
     }
     Data.hierarchize = hierarchize;
+    function isPlainObject(target) {
+      return _typeof(target) === "object" && target !== null && target.constructor.name === "Object";
+    }
+    Data.isPlainObject = isPlainObject;
+    function isPlainArray(target) {
+      return Array.isArray(target);
+    }
+    Data.isPlainArray = isPlainArray;
     /**
      * Tests to see if a given object is POD (Plain old data).
-     * @param object The object to test.
+     * @param target The object to test.
+     * @param deep True to traverse the entire object (deep), false to check just the first layer (shallow).
      */
-    function isPlain(object) {
-      return _typeof(object) === "object" && object !== null && object.constructor.name === "Object";
+    function isPlain(target) {
+      var deep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+      var object = Data.isPlainObject(target);
+      var array = Data.isPlainArray(target);
+      if (object || array) {
+        if (deep) {
+          for (var key in target) {
+            if (!isPlain(target[key], true)) {
+              return false;
+            }
+          }
+          return true;
+        } else {
+          return true;
+        }
+      } else {
+        if (typeof target === "string" || typeof target === "number" || typeof target === "boolean" || typeof target === "undefined" || typeof target === "bigint" || target === null) {
+          return true;
+        }
+        if (target instanceof Date) {
+          return true;
+        }
+        return false;
+      }
     }
     Data.isPlain = isPlain;
     /**

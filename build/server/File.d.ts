@@ -33,7 +33,7 @@ export declare namespace File {
      */
     function remove(path: string): Promise<void>;
     /**
-     * Copies a file from one path to another.
+     * Copies a file or directory structure recursively from one path to another.
      * @param fromPath The file to copy.
      * @param toPath The destination to paste to.
      */

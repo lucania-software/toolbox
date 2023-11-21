@@ -1,6 +1,10 @@
-export type Present<Value> = Exclude<Value, null | undefined>;
-export type ObjectWithPath<Path extends string, Type = any> = (Path extends `${infer Head}.${infer Tail}` ? (Record<Head, ObjectWithPath<Tail, Type>>) : (Record<Path, Present<Type>>));
-export type TypeAtPath<Target, Path extends string> = (Path extends `${infer Head}.${infer Tail}` ? (Head extends keyof Target ? TypeAtPath<Target[Head], Tail> : undefined) : (Target extends Record<string, any> ? Target[Path] : undefined));
+export type OperationTarget = Record<string, any>;
+export type PlainPrimitives = string | number | boolean | bigint | undefined | null | Date;
+export type PlainTarget<SupportedType = PlainPrimitives> = (SupportedType | {
+    [Key: string]: PlainTarget<SupportedType>;
+} | PlainTarget<SupportedType>[]);
+export type ObjectWithPath<Path extends string, Type> = (Path extends `${infer Head}.${infer Tail}` ? (Record<Head, ObjectWithPath<Tail, Type>>) : (Record<Path, Type>));
+export type Nested<Target extends OperationTarget, Path extends string, Fallback> = (Path extends `${infer Head}.${infer Tail}` ? (Head extends keyof Target ? Nested<Target[Head], Tail, Fallback> : Fallback) : (string extends Path ? (Target[keyof Target] | Fallback) : (Path extends keyof Target ? Target[Path] : Fallback)));
 interface WalkObjectCallback {
     /**
      * @param target The direct parent object of {@link property}. (Not necessarily the object being walked.)
@@ -21,14 +25,14 @@ export declare namespace Data {
      * @param path The path to check the existence of.
      * @returns True if {@link target} has {@link path}.
      */
-    function has<Path extends string>(target: any, path: Path): target is ObjectWithPath<Path>;
+    function has<Path extends string>(target: OperationTarget, path: Path): target is ObjectWithPath<Path, any>;
     /**
      * Finds a retrieves a value at {@link pieces} in {@link target} object.
      * @param target The target object.
      * @param pieces The path to retrieve a value from.
      * @returns The value in {@link target} at {@link pieces}, or undefined if {@link pieces} can't be found.
      */
-    function get<Target, Path extends string>(target: Target, path: Path): TypeAtPath<Target, Path> | undefined;
+    function get<Target extends OperationTarget, Path extends string>(target: Target, path: Path): Nested<Target, Path, undefined>;
     /**
      * Retrieves a value at {@link path} in {@link target} object.
      * @param target The target object.
@@ -36,7 +40,7 @@ export declare namespace Data {
      * @param fallback A value to fallback on if {@link path} couldn't be found.
      * @returns The value in {@link target} at {@link path}, or {@link fallback} if {@link path} doesn't exist or has a value of null or undefined.
      */
-    function get<Target, Path extends string, Fallback>(target: Target, path: Path, fallback: Fallback): Present<TypeAtPath<Target, Path>> | Fallback;
+    function get<Target extends OperationTarget, Path extends string, Fallback>(target: Target, path: Path, fallback: Fallback): Nested<Target, Path, Fallback>;
     /**
      * Finds a retrieves a value at {@link path} in {@link target} or throws and error if the value fails validation by {@link validator}.
      * @param target The target object.
@@ -44,7 +48,7 @@ export declare namespace Data {
      * @param validator A predicate to validate the value found at {@link path}.
      * @returns The value found at {@link path} in {@link target}.
      */
-    function getOrThrow<Target, Path extends string>(target: Target, path: Path): Present<TypeAtPath<Target, Path>>;
+    function getOrThrow<Target extends OperationTarget, Path extends string>(target: Target, path: Path): Nested<Target, Path, never>;
     /**
      * Sets a {@link value} in a {@link target} object at {@link pieces}.
      * @param target The target object.
@@ -52,21 +56,21 @@ export declare namespace Data {
      * @param value The value to be set.
      * @returns True if the target is updated, false otherwise.
      */
-    function set<Path extends string, Value>(target: any, path: Path, value: Value): target is ObjectWithPath<Path, Value>;
+    function set<Path extends string, Value>(target: any, path: Path, value: Value): asserts target is ObjectWithPath<Path, Value>;
     /**
      * Removes a value at {@link pieces} in {@link target}.
      * @param target The target object.
      * @param pieces The path of the value to remove from {@link target}.
-     * @returns The removed value.
+     * @returns The removed value or undefined if the value couldn't be found.
      */
-    function remove<Target extends ObjectWithPath<Path, any>, Path extends string>(target: Target, path: Path): TypeAtPath<Target, Path>;
+    function remove<Target extends ObjectWithPath<Path, any>, Path extends string>(target: Target, path: Path): Nested<Target, Path, undefined>;
     /**
      * Creates a copy of {@link target}.
      * @param target The target object to clone.
      * @param deep True to perform a deep copy, false to perform a shallow copy.
      * @returns A copy of {@link target}.
      */
-    function clone<Target extends object>(target: Target, deep?: boolean): Target;
+    function clone<Target extends OperationTarget>(target: Target, deep?: boolean): Target;
     /**
      * Walks across the nested properties of {@link target} and calls {@link callback} for every property.
      * @param target The target object.
@@ -89,11 +93,16 @@ export declare namespace Data {
      * @returns a hierarchized version of {@link target} with a nested hierarchy.
      */
     function hierarchize(target: any): any;
+    function isPlainObject(target: any): target is {
+        [Key: string]: any;
+    };
+    function isPlainArray(target: any): target is any[];
     /**
      * Tests to see if a given object is POD (Plain old data).
-     * @param object The object to test.
+     * @param target The object to test.
+     * @param deep True to traverse the entire object (deep), false to check just the first layer (shallow).
      */
-    function isPlain(object: any): boolean;
+    function isPlain(target: any, deep?: boolean): target is PlainTarget;
     /**
      * Used to optionally include {@link value}'s properties when defining an inline object.
      * @param condition The condition to be checked.

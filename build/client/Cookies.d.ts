@@ -10,13 +10,13 @@ export declare namespace Cookies {
     /**
      * Retrieves a cookie by name.
      * @param name The name of the cookie to get the value of.
-     * @returns The cookie named {@link name}, or null if it does not exist.
+     * @returns The cookie named {@link name}, or undefined if it does not exist.
      */
-    function get(name: string): string | null;
+    function get(name: string): string | undefined;
     /**
      * Retrieves a JSON cookie by name.
      * @param name The name of the cookie to get the value of.
-     * @returns The cookie named {@link name}, or null if it does not exist, or cannot be parsed as JSON.
+     * @returns The cookie named {@link name}, or undefined if it does not exist, or cannot be parsed as JSON.
      */
     function getJson(name: string): any;
     /**
