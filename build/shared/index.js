@@ -1141,7 +1141,12 @@
     function flatten(target) {
       var flattenedTarget = {};
       Data.walk(target, function (_, property, path) {
-        if (!isPlain(property)) {
+        if (_typeof(property) === "object") {
+          if (!isPlain(property)) {
+            flattenedTarget[path] = property;
+            return true;
+          }
+        } else {
           flattenedTarget[path] = property;
           return true;
         }
@@ -1187,18 +1192,10 @@
               return false;
             }
           }
-          return true;
-        } else {
-          return true;
         }
+        return true;
       } else {
-        if (typeof target === "string" || typeof target === "number" || typeof target === "boolean" || typeof target === "undefined" || typeof target === "bigint" || target === null) {
-          return true;
-        }
-        if (target instanceof Date) {
-          return true;
-        }
-        return false;
+        return typeof target === "string" || typeof target === "number" || typeof target === "boolean" || typeof target === "undefined" || typeof target === "bigint" || target === null;
       }
     }
     Data.isPlain = isPlain;
