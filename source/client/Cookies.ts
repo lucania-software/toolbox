@@ -14,7 +14,7 @@ export namespace Cookies {
     /**
      * Retrieves a cookie by name.
      * @param name The name of the cookie to get the value of.
-     * @returns The cookie named {@link name}, or null if it does not exist.
+     * @returns The cookie named {@link name}, or undefined if it does not exist.
      */
     export function get(name: string) {
         const valueStrings = document.cookie.split(";");
@@ -24,21 +24,21 @@ export namespace Cookies {
                 return value;
             }
         }
-        return null;
+        return undefined;
     }
 
     /**
      * Retrieves a JSON cookie by name.
      * @param name The name of the cookie to get the value of.
-     * @returns The cookie named {@link name}, or null if it does not exist, or cannot be parsed as JSON.
+     * @returns The cookie named {@link name}, or undefined if it does not exist, or cannot be parsed as JSON.
      */
     export function getJson(name: string) {
         try {
             const cookie = Cookies.get(name);
-            Data.assert(cookie !== null);
+            Data.assert(cookie !== undefined);
             return JSON.parse(cookie);
         } catch (error) {
-            return null;
+            return undefined;
         }
     }
 
@@ -75,7 +75,7 @@ export namespace Cookies {
         if (Data.has(options, "expires")) {
             pieces.push(`expires=${options.expires.toUTCString()}`)
         }
-        if (Data.has(options, "pasecureth") && options.secure) {
+        if (Data.has(options, "secure") && options.secure) {
             pieces.push("secure");
         }
         if (Data.has(options, "sameSite")) {

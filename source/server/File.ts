@@ -72,21 +72,35 @@ export namespace File {
     }
 
     /**
-     * Copies a file from one path to another.
+     * Copies a file or directory structure recursively from one path to another.
      * @param fromPath The file to copy.
      * @param toPath The destination to paste to.
      */
     export async function copy(fromPath: string, toPath: string) {
-        await new Promise<void>((resolve, reject) => {
-            ensureDirectoryExists(Path.dirname(toPath)).then(() => {
-                FileSystem.copyFile(fromPath, toPath, (error) => {
-                    if (error === null) {
-                        resolve();
-                    } else {
-                        reject(error);
+        await new Promise<void>(async (resolve, reject) => {
+            try {
+                await ensureDirectoryExists(Path.dirname(toPath));
+                const meta = await getMeta(fromPath);
+                if (meta.directory) {
+                    const copyTasks: Promise<void>[] = [];
+                    const fileList = await listDirectory(fromPath);
+                    for (const file of fileList) {
+                        copyTasks.push(copy(Path.join(fromPath, file), Path.join(toPath, file)));
                     }
-                });
-            });
+                    await Promise.all(copyTasks);
+                    resolve();
+                } else {
+                    FileSystem.copyFile(fromPath, toPath, (error) => {
+                        if (error === null) {
+                            resolve();
+                        } else {
+                            reject(error);
+                        }
+                    });
+                }
+            } catch (error) {
+                reject(error);
+            }
         });
     }
 
