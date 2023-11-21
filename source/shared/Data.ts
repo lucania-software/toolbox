@@ -1,20 +1,31 @@
 import { Error } from "./Error";
 
-export type Present<Value> = Exclude<Value, null | undefined>;
+export type OperationTarget = Record<string, any>;
 
-export type ObjectWithPath<Path extends string, Type = any> = (
+export type PlainPrimitives = string | number | boolean | bigint | undefined | null | Date;
+export type PlainTarget<SupportedType = PlainPrimitives> = (
+    SupportedType |
+    { [Key: string]: PlainTarget<SupportedType> } |
+    PlainTarget<SupportedType>[]
+)
+
+export type ObjectWithPath<Path extends string, Type> = (
     Path extends `${infer Head}.${infer Tail}` ? (
         Record<Head, ObjectWithPath<Tail, Type>>
     ) : (
-        Record<Path, Present<Type>>
+        Record<Path, Type>
     )
 );
 
-export type TypeAtPath<Target, Path extends string> = (
+export type Nested<Target extends OperationTarget, Path extends string, Fallback> = (
     Path extends `${infer Head}.${infer Tail}` ? (
-        Head extends keyof Target ? TypeAtPath<Target[Head], Tail> : undefined
+        Head extends keyof Target ? Nested<Target[Head], Tail, Fallback> : Fallback
     ) : (
-        Target extends Record<string, any> ? Target[Path] : undefined
+        string extends Path ? (
+            Target[keyof Target] | Fallback
+        ) : (
+            Path extends keyof Target ? Target[Path] : Fallback
+        )
     )
 );
 
@@ -42,7 +53,7 @@ export namespace Data {
      * @param path The path to check the existence of.
      * @returns True if {@link target} has {@link path}.
      */
-    export function has<Path extends string>(target: any, path: Path): target is ObjectWithPath<Path> {
+    export function has<Path extends string>(target: OperationTarget, path: Path): target is ObjectWithPath<Path, any> {
         const pieces = path === "" ? [] : path.split(".");
         const key = pieces.shift();
         if (key === undefined) {
@@ -62,7 +73,7 @@ export namespace Data {
      * @param pieces The path to retrieve a value from.
      * @returns The value in {@link target} at {@link pieces}, or undefined if {@link pieces} can't be found.
      */
-    export function get<Target, Path extends string>(target: Target, path: Path): TypeAtPath<Target, Path> | undefined;
+    export function get<Target extends OperationTarget, Path extends string>(target: Target, path: Path): Nested<Target, Path, undefined>;
     /**
      * Retrieves a value at {@link path} in {@link target} object.
      * @param target The target object.
@@ -70,7 +81,7 @@ export namespace Data {
      * @param fallback A value to fallback on if {@link path} couldn't be found.
      * @returns The value in {@link target} at {@link path}, or {@link fallback} if {@link path} doesn't exist or has a value of null or undefined.
      */
-    export function get<Target, Path extends string, Fallback>(target: Target, path: Path, fallback: Fallback): Present<TypeAtPath<Target, Path>> | Fallback;
+    export function get<Target extends OperationTarget, Path extends string, Fallback>(target: Target, path: Path, fallback: Fallback): Nested<Target, Path, Fallback>;
     export function get(target: any, path: string, fallback?: any) {
         const pieces = path === "" ? [] : path.split(".");
         const key = pieces.shift();
@@ -96,7 +107,7 @@ export namespace Data {
      * @param validator A predicate to validate the value found at {@link path}.
      * @returns The value found at {@link path} in {@link target}.
      */
-    export function getOrThrow<Target, Path extends string>(target: Target, path: Path): Present<TypeAtPath<Target, Path>> {
+    export function getOrThrow<Target extends OperationTarget, Path extends string>(target: Target, path: Path): Nested<Target, Path, never> {
         const value = Data.get(target, path, undefined);
         if (value === undefined) {
             throw new Error.Original(`Failed to get value at "${path}" in target.`, { cause: { target, path } });
@@ -111,7 +122,7 @@ export namespace Data {
      * @param value The value to be set.
      * @returns True if the target is updated, false otherwise.
      */
-    export function set<Path extends string, Value>(target: any, path: Path, value: Value): target is ObjectWithPath<Path, Value> {
+    export function set<Path extends string, Value>(target: any, path: Path, value: Value): asserts target is ObjectWithPath<Path, Value> {
         const pieces = path === "" ? [] : path.split(".");
         const key = pieces.shift();
         if (key !== undefined) {
@@ -124,16 +135,15 @@ export namespace Data {
                 Data.set(target[key], pieces.join("."), value);
             }
         }
-        return true;
     }
 
     /**
      * Removes a value at {@link pieces} in {@link target}.
      * @param target The target object.
      * @param pieces The path of the value to remove from {@link target}.
-     * @returns The removed value.
+     * @returns The removed value or undefined if the value couldn't be found.
      */
-    export function remove<Target extends ObjectWithPath<Path, any>, Path extends string>(target: Target, path: Path): TypeAtPath<Target, Path> {
+    export function remove<Target extends ObjectWithPath<Path, any>, Path extends string>(target: Target, path: Path): Nested<Target, Path, undefined> {
         const pieces = path === "" ? [] : path.split(".");
         const key = pieces.shift();
         if (key !== undefined) {
@@ -145,7 +155,7 @@ export namespace Data {
                 return Data.remove(target[key], pieces.join("."));
             }
         }
-        return undefined as any;
+        return undefined as Nested<Target, Path, undefined>;
     }
 
     /**
@@ -154,7 +164,7 @@ export namespace Data {
      * @param deep True to perform a deep copy, false to perform a shallow copy.
      * @returns A copy of {@link target}.
      */
-    export function clone<Target extends object>(target: Target, deep: boolean = false): Target {
+    export function clone<Target extends OperationTarget>(target: Target, deep: boolean = false): Target {
         if (deep) {
             const objectClone = Array.isArray(target) ? [] : {};
             Data.walk(target, (_, property, path) => {
@@ -223,12 +233,45 @@ export namespace Data {
         return object;
     }
 
+    export function isPlainObject(target: any): target is { [Key: string]: any } {
+        return typeof target === "object" && target !== null && target.constructor.name === "Object";
+    }
+
+    export function isPlainArray(target: any): target is any[] {
+        return Array.isArray(target);
+    }
+
     /**
      * Tests to see if a given object is POD (Plain old data).
-     * @param object The object to test.
+     * @param target The object to test.
+     * @param deep True to traverse the entire object (deep), false to check just the first layer (shallow).
      */
-    export function isPlain(object: any) {
-        return typeof object === "object" && object !== null && object.constructor.name === "Object";
+    export function isPlain(target: any, deep: boolean = true): target is PlainTarget {
+        const object = Data.isPlainObject(target);
+        const array = Data.isPlainArray(target);
+        if (object || array) {
+            if (deep) {
+                for (const key in target) {
+                    if (!isPlain((target as any)[key], true)) {
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                return true;
+            }
+        } else {
+            if (
+                typeof target === "string" || typeof target === "number" || typeof target === "boolean" ||
+                typeof target === "undefined" || typeof target === "bigint" || target === null
+            ) {
+                return true;
+            }
+            if (target instanceof Date) {
+                return true;
+            }
+            return false;
+        }
     }
 
     /**
@@ -269,10 +312,7 @@ export namespace Data {
                 const value1 = object1[key as keyof typeof object1];
                 const value2 = object2[key as keyof typeof object2];
                 const areObjects = (typeof value1 === "object" && value1 !== null) && (typeof value2 === "object" && value2 !== null);
-                if (
-                    areObjects && !Data.deepEquals(value1, value2) ||
-                    !areObjects && value1 !== value2
-                ) {
+                if (areObjects && !Data.deepEquals(value1, value2) || !areObjects && value1 !== value2) {
                     return false;
                 }
             }
