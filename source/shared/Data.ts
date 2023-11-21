@@ -24,7 +24,11 @@ export type Nested<Target extends OperationTarget, Path extends string, Fallback
         string extends Path ? (
             Target[keyof Target] | Fallback
         ) : (
-            Path extends keyof Target ? Target[Path] : Fallback
+            Path extends keyof Target ? (
+                Exclude<Target[Path], undefined>
+            ) : (
+                Fallback
+            )
         )
     )
 );
