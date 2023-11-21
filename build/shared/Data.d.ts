@@ -1,10 +1,18 @@
-export type OperationTarget = Record<string, any>;
-export type PlainPrimitives = string | number | boolean | bigint | undefined | null | Date;
+export type PlainPrimitives = string | number | boolean | bigint | undefined | null;
 export type PlainTarget<SupportedType = PlainPrimitives> = (SupportedType | {
     [Key: string]: PlainTarget<SupportedType>;
 } | PlainTarget<SupportedType>[]);
-export type ObjectWithPath<Path extends string, Type> = (Path extends `${infer Head}.${infer Tail}` ? (Record<Head, ObjectWithPath<Tail, Type>>) : (Record<Path, Type>));
-export type Nested<Target extends OperationTarget, Path extends string, Fallback> = (Path extends `${infer Head}.${infer Tail}` ? (Head extends keyof Target ? Nested<Target[Head], Tail, Fallback> : Fallback) : (string extends Path ? (Target[keyof Target] | Fallback) : (Path extends keyof Target ? (Exclude<Target[Path], undefined>) : (Fallback))));
+type Present<Value> = Exclude<Exclude<Value, undefined>, null>;
+type ObjectWithPath<Path extends string, Type = any> = (Path extends `${infer Head}.${infer Tail}` ? ({
+    [Key in Head]: ObjectWithPath<Tail, Type>;
+}) : ({
+    [Key in Path]: Present<Type>;
+}));
+type TypeAtPath<Target, Path extends string> = (Path extends `${infer Head}.${infer Tail}` ? (Target extends {
+    [Key in Head]: any;
+} ? TypeAtPath<Target[Head], Tail> : undefined) : (Target extends {
+    [Key in Path]: any;
+} ? Target[Path] : undefined));
 interface WalkObjectCallback {
     /**
      * @param target The direct parent object of {@link property}. (Not necessarily the object being walked.)
@@ -25,14 +33,14 @@ export declare namespace Data {
      * @param path The path to check the existence of.
      * @returns True if {@link target} has {@link path}.
      */
-    function has<Path extends string>(target: OperationTarget, path: Path): target is ObjectWithPath<Path, any>;
+    function has<Path extends string>(target: any, path: Path): target is ObjectWithPath<Path>;
     /**
      * Finds a retrieves a value at {@link pieces} in {@link target} object.
      * @param target The target object.
      * @param pieces The path to retrieve a value from.
      * @returns The value in {@link target} at {@link pieces}, or undefined if {@link pieces} can't be found.
      */
-    function get<Target extends OperationTarget, Path extends string>(target: Target, path: Path): Nested<Target, Path, undefined>;
+    function get<Target, Path extends string>(target: Target, path: Path): TypeAtPath<Target, Path> | undefined;
     /**
      * Retrieves a value at {@link path} in {@link target} object.
      * @param target The target object.
@@ -40,7 +48,7 @@ export declare namespace Data {
      * @param fallback A value to fallback on if {@link path} couldn't be found.
      * @returns The value in {@link target} at {@link path}, or {@link fallback} if {@link path} doesn't exist or has a value of null or undefined.
      */
-    function get<Target extends OperationTarget, Path extends string, Fallback>(target: Target, path: Path, fallback: Fallback): Nested<Target, Path, Fallback>;
+    function get<Target, Path extends string, Fallback>(target: Target, path: Path, fallback: Fallback): Present<TypeAtPath<Target, Path>> | Fallback;
     /**
      * Finds a retrieves a value at {@link path} in {@link target} or throws and error if the value fails validation by {@link validator}.
      * @param target The target object.
@@ -48,7 +56,7 @@ export declare namespace Data {
      * @param validator A predicate to validate the value found at {@link path}.
      * @returns The value found at {@link path} in {@link target}.
      */
-    function getOrThrow<Target extends OperationTarget, Path extends string>(target: Target, path: Path): Nested<Target, Path, never>;
+    function getOrThrow<Target, Path extends string>(target: Target, path: Path): Present<TypeAtPath<Target, Path>>;
     /**
      * Sets a {@link value} in a {@link target} object at {@link pieces}.
      * @param target The target object.
@@ -56,21 +64,21 @@ export declare namespace Data {
      * @param value The value to be set.
      * @returns True if the target is updated, false otherwise.
      */
-    function set<Path extends string, Value>(target: any, path: Path, value: Value): asserts target is ObjectWithPath<Path, Value>;
+    function set<Path extends string, Value>(target: any, path: Path, value: Value): target is ObjectWithPath<Path, Value>;
     /**
      * Removes a value at {@link pieces} in {@link target}.
      * @param target The target object.
      * @param pieces The path of the value to remove from {@link target}.
-     * @returns The removed value or undefined if the value couldn't be found.
+     * @returns The removed value.
      */
-    function remove<Target extends ObjectWithPath<Path, any>, Path extends string>(target: Target, path: Path): Nested<Target, Path, undefined>;
+    function remove<Target extends ObjectWithPath<Path, any>, Path extends string>(target: Target, path: Path): TypeAtPath<Target, Path>;
     /**
      * Creates a copy of {@link target}.
      * @param target The target object to clone.
      * @param deep True to perform a deep copy, false to perform a shallow copy.
      * @returns A copy of {@link target}.
      */
-    function clone<Target extends OperationTarget>(target: Target, deep?: boolean): Target;
+    function clone<Target extends object>(target: Target, deep?: boolean): Target;
     /**
      * Walks across the nested properties of {@link target} and calls {@link callback} for every property.
      * @param target The target object.

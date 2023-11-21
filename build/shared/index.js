@@ -1062,13 +1062,14 @@
           Data.set(target[key], pieces.join("."), value);
         }
       }
+      return true;
     }
     Data.set = set;
     /**
      * Removes a value at {@link pieces} in {@link target}.
      * @param target The target object.
      * @param pieces The path of the value to remove from {@link target}.
-     * @returns The removed value or undefined if the value couldn't be found.
+     * @returns The removed value.
      */
     function remove(target, path) {
       var pieces = path === "" ? [] : path.split(".");
@@ -1142,7 +1143,7 @@
       var flattenedTarget = {};
       Data.walk(target, function (_, property, path) {
         if (_typeof(property) === "object") {
-          if (!isPlain(property)) {
+          if (!isPlain(property, false)) {
             flattenedTarget[path] = property;
             return true;
           }
