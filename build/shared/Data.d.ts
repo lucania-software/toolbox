@@ -4,7 +4,7 @@ export type PlainTarget<SupportedType = PlainPrimitives> = (SupportedType | {
     [Key: string]: PlainTarget<SupportedType>;
 } | PlainTarget<SupportedType>[]);
 export type ObjectWithPath<Path extends string, Type> = (Path extends `${infer Head}.${infer Tail}` ? (Record<Head, ObjectWithPath<Tail, Type>>) : (Record<Path, Type>));
-export type Nested<Target extends OperationTarget, Path extends string, Fallback> = (Path extends `${infer Head}.${infer Tail}` ? (Head extends keyof Target ? Nested<Target[Head], Tail, Fallback> : Fallback) : (string extends Path ? (Target[keyof Target] | Fallback) : (Path extends keyof Target ? Target[Path] : Fallback)));
+export type Nested<Target extends OperationTarget, Path extends string, Fallback> = (Path extends `${infer Head}.${infer Tail}` ? (Head extends keyof Target ? Nested<Target[Head], Tail, Fallback> : Fallback) : (string extends Path ? (Target[keyof Target] | Fallback) : (Path extends keyof Target ? (Exclude<Target[Path], undefined>) : (Fallback))));
 interface WalkObjectCallback {
     /**
      * @param target The direct parent object of {@link property}. (Not necessarily the object being walked.)
