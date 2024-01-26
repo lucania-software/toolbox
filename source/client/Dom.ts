@@ -12,6 +12,7 @@ type HTMLElementCreationOptions = {
     textContent?: string,
     innerHTML?: string,
     outerHTML?: string,
+    style?: Partial<CSSStyleDeclaration>,
     attributes?: { [ElementId: string]: string },
     eventListeners?: { [ElementId: string]: EventListenerOrEventListenerObject },
     childNodes?: Node[]
@@ -80,6 +81,11 @@ export namespace Dom {
         }
         if (Data.has(options, "outerHTML")) {
             element.outerHTML = options.outerHTML;
+        }
+        if (Data.has(options, "style")) {
+            for (const key in options.style) {
+                element.style[key as never] = options.style[key];
+            }
         }
         if (Data.has(options, "attributes")) {
             for (const name in options.attributes) {

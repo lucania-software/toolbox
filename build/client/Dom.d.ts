@@ -9,6 +9,7 @@ type HTMLElementCreationOptions = {
     textContent?: string;
     innerHTML?: string;
     outerHTML?: string;
+    style?: Partial<CSSStyleDeclaration>;
     attributes?: {
         [ElementId: string]: string;
     };
