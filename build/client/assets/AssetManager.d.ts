@@ -19,6 +19,6 @@ export declare class AssetManager {
     add(name: string, source: string, contentType?: string): void;
     load(resourceLoadedCallback?: ResourceLoadedCallback): Promise<unknown[]>;
     get<Type>(name: string): Type | undefined;
-    getAsserted<Type>(name: string): Type;
+    getAsserted<Type = any>(name: string): Type;
 }
 export {};

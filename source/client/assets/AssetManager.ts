@@ -87,7 +87,7 @@ export class AssetManager {
         }
     }
 
-    public getAsserted<Type>(name: string): Type {
+    public getAsserted<Type = any>(name: string): Type {
         const value = this.get<Type>(name);
         Data.assert(value !== undefined, `Failed to get asset named "${name}" as it is not loaded.`);
         return value;
