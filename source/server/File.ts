@@ -5,6 +5,7 @@ export interface FileMeta {
     path: string;
     size: number;
     directory: boolean;
+    symlink: boolean;
     creation: Date;
     lastModified: Date;
     lastAccess: Date;
@@ -90,13 +91,29 @@ export namespace File {
                     await Promise.all(copyTasks);
                     resolve();
                 } else {
-                    FileSystem.copyFile(fromPath, toPath, (error) => {
-                        if (error === null) {
-                            resolve();
-                        } else {
-                            reject(error);
-                        }
-                    });
+                    if (meta.symlink) {
+                        FileSystem.readlink(fromPath, (error, symlinkTargetPath) => {
+                            if (error === null) {
+                                FileSystem.symlink(symlinkTargetPath, toPath, "junction", (error) => {
+                                    if (error === null) {
+                                        resolve();
+                                    } else {
+                                        reject(error);
+                                    }
+                                });
+                            } else {
+                                reject(error);
+                            }
+                        });
+                    } else {
+                        FileSystem.copyFile(fromPath, toPath, (error) => {
+                            if (error === null) {
+                                resolve();
+                            } else {
+                                reject(error);
+                            }
+                        });
+                    }
                 }
             } catch (error) {
                 reject(error);
@@ -185,10 +202,11 @@ export namespace File {
      */
     export async function getMeta(path: string): Promise<FileMeta> {
         return new Promise<FileMeta>((resolve, reject) => {
-            FileSystem.stat(path, (error, statistics) => {
+            FileSystem.lstat(path, (error, statistics) => {
                 if (error === null) {
                     resolve({
                         directory: statistics.isDirectory(),
+                        symlink: statistics.isSymbolicLink(),
                         path: Path.resolve(path),
                         size: statistics.size,
                         creation: statistics.birthtime,

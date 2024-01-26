@@ -4,6 +4,7 @@ export interface FileMeta {
     path: string;
     size: number;
     directory: boolean;
+    symlink: boolean;
     creation: Date;
     lastModified: Date;
     lastAccess: Date;
