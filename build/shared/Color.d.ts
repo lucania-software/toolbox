@@ -12,6 +12,7 @@ export declare class Color {
     get blue(): number;
     get alpha(): number;
     clone(): Color;
+    equals(color: any): boolean;
     /**
      * Mixes two colors together.
      * @param source The source of the color to mix.

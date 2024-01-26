@@ -27,6 +27,10 @@ export class Color {
         return new Color(this._hex);
     }
 
+    public equals(color: any) {
+        return color instanceof Color && color._hex === this._hex;
+    }
+
     /**
      * Mixes two colors together.
      * @param source The source of the color to mix.
