@@ -4,35 +4,35 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.SharedToolbox = {}));
 })(this, (function (exports) { 'use strict';
 
-  function ownKeys(object, enumerableOnly) {
-    var keys = Object.keys(object);
+  function ownKeys(e, r) {
+    var t = Object.keys(e);
     if (Object.getOwnPropertySymbols) {
-      var symbols = Object.getOwnPropertySymbols(object);
-      enumerableOnly && (symbols = symbols.filter(function (sym) {
-        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-      })), keys.push.apply(keys, symbols);
+      var o = Object.getOwnPropertySymbols(e);
+      r && (o = o.filter(function (r) {
+        return Object.getOwnPropertyDescriptor(e, r).enumerable;
+      })), t.push.apply(t, o);
     }
-    return keys;
+    return t;
   }
-  function _objectSpread2(target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = null != arguments[i] ? arguments[i] : {};
-      i % 2 ? ownKeys(Object(source), !0).forEach(function (key) {
-        _defineProperty(target, key, source[key]);
-      }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) {
-        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+  function _objectSpread2(e) {
+    for (var r = 1; r < arguments.length; r++) {
+      var t = null != arguments[r] ? arguments[r] : {};
+      r % 2 ? ownKeys(Object(t), !0).forEach(function (r) {
+        _defineProperty(e, r, t[r]);
+      }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) {
+        Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
       });
     }
-    return target;
+    return e;
   }
-  function _typeof(obj) {
+  function _typeof(o) {
     "@babel/helpers - typeof";
 
-    return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
-      return typeof obj;
-    } : function (obj) {
-      return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    }, _typeof(obj);
+    return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) {
+      return typeof o;
+    } : function (o) {
+      return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+    }, _typeof(o);
   }
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -222,6 +222,7 @@
     return Clock;
   }();
 
+  var _class;
   var Color = /*#__PURE__*/function () {
     function Color(hex) {
       _classCallCheck(this, Color);
@@ -269,6 +270,11 @@
       value: function clone() {
         return new Color(this._hex);
       }
+    }, {
+      key: "equals",
+      value: function equals(color) {
+        return color instanceof Color && color._hex === this._hex;
+      }
       /**
        * Mixes two colors together.
        * @param source The source of the color to mix.
@@ -315,15 +321,16 @@
     }]);
     return Color;
   }();
-  _defineProperty(Color, "BLACK", Color.from(0x000000FF));
-  _defineProperty(Color, "WHITE", Color.from(0xFFFFFFFF));
-  _defineProperty(Color, "GRAY", Color.from(0x808080FF));
-  _defineProperty(Color, "RED", Color.from(0xFF0000FF));
-  _defineProperty(Color, "GREEN", Color.from(0x00FF00FF));
-  _defineProperty(Color, "BLUE", Color.from(0x0000FFFF));
-  _defineProperty(Color, "CYAN", Color.from(0x00FFFFFF));
-  _defineProperty(Color, "MAGENTA", Color.from(0xFF00FFFF));
-  _defineProperty(Color, "YELLOW", Color.from(0xFFFF00FF));
+  _class = Color;
+  _defineProperty(Color, "BLACK", _class.from(0x000000FF));
+  _defineProperty(Color, "WHITE", _class.from(0xFFFFFFFF));
+  _defineProperty(Color, "GRAY", _class.from(0x808080FF));
+  _defineProperty(Color, "RED", _class.from(0xFF0000FF));
+  _defineProperty(Color, "GREEN", _class.from(0x00FF00FF));
+  _defineProperty(Color, "BLUE", _class.from(0x0000FFFF));
+  _defineProperty(Color, "CYAN", _class.from(0x00FFFFFF));
+  _defineProperty(Color, "MAGENTA", _class.from(0xFF00FFFF));
+  _defineProperty(Color, "YELLOW", _class.from(0xFFFF00FF));
 
   /**
    * Used for printing to the console in Color! :D

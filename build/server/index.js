@@ -77,14 +77,33 @@ exports.File = void 0;
                     resolve();
                 }
                 else {
-                    FileSystem.copyFile(fromPath, toPath, (error) => {
-                        if (error === null) {
-                            resolve();
-                        }
-                        else {
-                            reject(error);
-                        }
-                    });
+                    if (meta.symlink) {
+                        FileSystem.readlink(fromPath, (error, symlinkTargetPath) => {
+                            if (error === null) {
+                                FileSystem.symlink(symlinkTargetPath, toPath, "junction", (error) => {
+                                    if (error === null) {
+                                        resolve();
+                                    }
+                                    else {
+                                        reject(error);
+                                    }
+                                });
+                            }
+                            else {
+                                reject(error);
+                            }
+                        });
+                    }
+                    else {
+                        FileSystem.copyFile(fromPath, toPath, (error) => {
+                            if (error === null) {
+                                resolve();
+                            }
+                            else {
+                                reject(error);
+                            }
+                        });
+                    }
                 }
             }
             catch (error) {
@@ -177,10 +196,11 @@ exports.File = void 0;
      */
     async function getMeta(path) {
         return new Promise((resolve, reject) => {
-            FileSystem.stat(path, (error, statistics) => {
+            FileSystem.lstat(path, (error, statistics) => {
                 if (error === null) {
                     resolve({
                         directory: statistics.isDirectory(),
+                        symlink: statistics.isSymbolicLink(),
                         path: Path.resolve(path),
                         size: statistics.size,
                         creation: statistics.birthtime,
