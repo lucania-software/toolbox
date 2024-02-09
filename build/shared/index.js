@@ -1362,8 +1362,8 @@
       var lastDelimiter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : " and ";
       var delimiter = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : ", ";
       if (values.length > 1) {
-        var lastValue = values.pop();
-        return values.join(delimiter) + lastDelimiter + lastValue;
+        var lastValue = values[values.length - 1];
+        return values.slice(0, -1).join(delimiter) + lastDelimiter + lastValue;
       } else {
         return values.join(delimiter);
       }
