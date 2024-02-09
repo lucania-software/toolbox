@@ -89,8 +89,8 @@ export namespace Text {
      */
     export function list(values: string[], lastDelimiter: string = " and ", delimiter: string = ", ") {
         if (values.length > 1) {
-            const lastValue = values.pop();
-            return values.join(delimiter) + lastDelimiter + lastValue;
+            const lastValue = values[values.length - 1];
+            return values.slice(0, -1).join(delimiter) + lastDelimiter + lastValue;
         } else {
             return values.join(delimiter);
         }
