@@ -231,39 +231,103 @@
       this._hex = hex;
       this._rgba = Color._getRgba(hex);
     }
+    /**
+     * Gets this color's RGBA value as a tuple, on a scale from 0 to 255.
+     */
     _createClass(Color, [{
       key: "rgba",
       get: function get() {
         return this._rgba;
       }
+      /**
+       * Gets this color's RGBA value as a tuple, on a scale from 0 to 1.
+       */
+    }, {
+      key: "normalizedRgba",
+      get: function get() {
+        return this._rgba.map(function (value) {
+          return value / 255;
+        });
+      }
     }, {
       key: "hex",
-      get: function get() {
+      get:
+      /**
+       * Gets this color's hex value, including alpha channel (i.e. 0xFF00FFFF)
+       */
+      function get() {
         return Number(this._hex);
-      },
+      }
+      /**
+       * Sets this color's hex value, including alpha channel (i.e. 0xFF00FFFF)
+       */,
       set: function set(value) {
         this._hex = BigInt(value);
         this._rgba = Color._getRgba(this._hex);
       }
+      /**
+       * The red channel of this color, on a scale from 0 to 255
+       */
     }, {
       key: "red",
       get: function get() {
         return this.rgba[0];
       }
+      /**
+       * The green channel of this color, on a scale from 0 to 255
+       */
     }, {
       key: "green",
       get: function get() {
         return this.rgba[1];
       }
+      /**
+       * The blue channel of this color, on a scale from 0 to 255
+       */
     }, {
       key: "blue",
       get: function get() {
         return this.rgba[2];
       }
+      /**
+       * The alpha channel of this color, on a scale from 0 to 255
+       */
     }, {
       key: "alpha",
       get: function get() {
         return this.rgba[3];
+      }
+      /**
+       * The red channel of this color, on a scale from 0 to 1
+       */
+    }, {
+      key: "normalizedRed",
+      get: function get() {
+        return this.red / 255;
+      }
+      /**
+       * The green channel of this color, on a scale from 0 to 1
+       */
+    }, {
+      key: "normalizedGreen",
+      get: function get() {
+        return this.green / 255;
+      }
+      /**
+       * The blue channel of this color, on a scale from 0 to 1
+       */
+    }, {
+      key: "normalizedBlue",
+      get: function get() {
+        return this.blue / 255;
+      }
+      /**
+       * The alpha channel of this color, on a scale from 0 to 1
+       */
+    }, {
+      key: "normalizedAlpha",
+      get: function get() {
+        return this.alpha / 255;
       }
     }, {
       key: "clone",
