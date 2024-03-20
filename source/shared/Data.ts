@@ -1,14 +1,15 @@
 import { Error } from "./Error";
 
+export type StringWithSuggestion<Suggestion> = Suggestion | (string & {});
 export type PlainPrimitives = string | number | boolean | bigint | undefined | null;
 export type PlainTarget<SupportedType = PlainPrimitives> = (
     SupportedType |
     { [Key: string]: PlainTarget<SupportedType> } |
     PlainTarget<SupportedType>[]
 )
-type Present<Value> = Exclude<Exclude<Value, undefined>, null>;
+export type Present<Value> = Exclude<Exclude<Value, undefined>, null>;
 
-type ObjectWithPath<Path extends string, Type = any> = (
+export type ObjectWithPath<Path extends string, Type = any> = (
     Path extends `${infer Head}.${infer Tail}` ? (
         { [Key in Head]: ObjectWithPath<Tail, Type> }
     ) : (
@@ -16,7 +17,7 @@ type ObjectWithPath<Path extends string, Type = any> = (
     )
 );
 
-type TypeAtPath<Target, Path extends string> = (
+export type TypeAtPath<Target, Path extends string> = (
     Path extends `${infer Head}.${infer Tail}` ? (
         Target extends { [Key in Head]: any } ? TypeAtPath<Target[Head], Tail> : undefined
     ) : (
@@ -24,7 +25,7 @@ type TypeAtPath<Target, Path extends string> = (
     )
 );
 
-interface WalkObjectCallback {
+export interface WalkObjectCallback {
 
     /**
      * @param target The direct parent object of {@link property}. (Not necessarily the object being walked.)
