@@ -11,17 +11,64 @@ export class Color {
         this._rgba = Color._getRgba(hex);
     }
 
+    /**
+     * Gets this color's RGBA value as a tuple, on a scale from 0 to 255.
+     */
     public get rgba() { return this._rgba; }
+
+    /**
+     * Gets this color's RGBA value as a tuple, on a scale from 0 to 1.
+     */
+    public get normalizedRgba(): Rgba {
+        return this._rgba.map((value) => value / 255) as any;
+    };
+
+    /**
+     * Gets this color's hex value, including alpha channel (i.e. 0xFF00FFFF)
+     */
     public get hex() { return Number(this._hex); }
+
+    /**
+     * Sets this color's hex value, including alpha channel (i.e. 0xFF00FFFF)
+     */
     public set hex(value: number) {
         this._hex = BigInt(value);
         this._rgba = Color._getRgba(this._hex);
     }
 
+    /**
+     * The red channel of this color, on a scale from 0 to 255
+     */
     public get red() { return this.rgba[0]; }
+    /**
+     * The green channel of this color, on a scale from 0 to 255
+     */
     public get green() { return this.rgba[1]; }
+    /**
+     * The blue channel of this color, on a scale from 0 to 255
+     */
     public get blue() { return this.rgba[2]; }
-    public get alpha() { return this.rgba[3] }
+    /**
+     * The alpha channel of this color, on a scale from 0 to 255
+     */
+    public get alpha() { return this.rgba[3]; }
+
+    /**
+     * The red channel of this color, on a scale from 0 to 1
+     */
+    public get normalizedRed() { return this.red / 255; }
+    /**
+     * The green channel of this color, on a scale from 0 to 1
+     */
+    public get normalizedGreen() { return this.green / 255; }
+    /**
+     * The blue channel of this color, on a scale from 0 to 1
+     */
+    public get normalizedBlue() { return this.blue / 255; }
+    /**
+     * The alpha channel of this color, on a scale from 0 to 1
+     */
+    public get normalizedAlpha() { return this.alpha / 255; }
 
     public clone() {
         return new Color(this._hex);
