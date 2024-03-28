@@ -9,7 +9,7 @@ export type ObjectWithPath<Path extends string, Type = any> = (Path extends `${i
 }) : ({
     [Key in Path]: Type;
 }));
-type TypeAtPath<Target, Path extends string> = (Path extends `${infer Head}.${infer Tail}` ? (Target extends {
+export type TypeAtPath<Target, Path extends string> = (Path extends `${infer Head}.${infer Tail}` ? (Target extends {
     [Key in Head]?: any;
 } ? TypeAtPath<Target[Head], Tail> : undefined) : (Target extends {
     [Key in Path]?: any;
@@ -128,4 +128,3 @@ export declare namespace Data {
     function deepEquals(object1: any, object2: any): boolean;
     function assert(condition: boolean, message?: string): asserts condition;
 }
-export {};
