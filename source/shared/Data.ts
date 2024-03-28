@@ -17,7 +17,7 @@ export type ObjectWithPath<Path extends string, Type = any> = (
     )
 );
 
-type TypeAtPath<Target, Path extends string> = (
+export type TypeAtPath<Target, Path extends string> = (
     Path extends `${infer Head}.${infer Tail}` ? (
         Target extends { [Key in Head]?: any } ? TypeAtPath<Target[Head], Tail> : undefined
     ) : (
