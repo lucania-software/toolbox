@@ -13,17 +13,26 @@ export type ObjectWithPath<Path extends string, Type = any> = (
     Path extends `${infer Head}.${infer Tail}` ? (
         { [Key in Head]: ObjectWithPath<Tail, Type> }
     ) : (
-        { [Key in Path]: Present<Type> }
+        { [Key in Path]: Type }
     )
 );
 
-export type TypeAtPath<Target, Path extends string> = (
+type TypeAtPath<Target, Path extends string> = (
     Path extends `${infer Head}.${infer Tail}` ? (
-        Target extends { [Key in Head]: any } ? TypeAtPath<Target[Head], Tail> : undefined
+        Target extends { [Key in Head]?: any } ? TypeAtPath<Target[Head], Tail> : undefined
     ) : (
-        Target extends { [Key in Path]: any } ? Target[Path] : undefined
+        Target extends { [Key in Path]?: any } ? Target[Path] : undefined
     )
 );
+
+// OLD TypeAtPath doesn't allow getting optional parameters
+// export type TypeAtPath<Target, Path extends string> = (
+//     Path extends `${infer Head}.${infer Tail}` ? (
+//         Target extends { [Key in Head]: any } ? TypeAtPath<Target[Head], Tail> : undefined
+//     ) : (
+//         Target extends { [Key in Path]: any } ? Target[Path] : undefined
+//     )
+// );
 
 export interface WalkObjectCallback {
 
