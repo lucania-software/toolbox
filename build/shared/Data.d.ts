@@ -4,11 +4,13 @@ export type PlainTarget<SupportedType = PlainPrimitives> = (SupportedType | {
     [Key: string]: PlainTarget<SupportedType>;
 } | PlainTarget<SupportedType>[]);
 export type Present<Value> = Exclude<Exclude<Value, undefined>, null>;
-export type ObjectWithPath<Path extends string, Type = any> = (Path extends `${infer Head}.${infer Tail}` ? ({
+export type ObjectWithPath<Path extends string, Type = any, Optional extends boolean = false> = (Path extends `${infer Head}.${infer Tail}` ? ({
     [Key in Head]: ObjectWithPath<Tail, Type>;
+}) : (Optional extends true ? ({
+    [Key in Path]?: Type;
 }) : ({
     [Key in Path]: Type;
-}));
+})));
 export type TypeAtPath<Target, Path extends string> = (Path extends `${infer Head}.${infer Tail}` ? (Target extends {
     [Key in Head]?: any;
 } ? TypeAtPath<Target[Head], Tail> : undefined) : (Target extends {
