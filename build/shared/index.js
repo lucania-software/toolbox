@@ -1148,7 +1148,11 @@
       if (key !== undefined) {
         if (pieces.length === 0) {
           var deleted = target[key];
-          delete target[key];
+          if (Array.isArray(target) && !isNaN(parseInt(key))) {
+            target.splice(parseInt(key), 1);
+          } else {
+            delete target[key];
+          }
           return deleted;
         } else if (key in target) {
           return Data.remove(target[key], pieces.join("."));
