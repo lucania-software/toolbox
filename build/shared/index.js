@@ -4,6 +4,33 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.SharedToolbox = {}));
 })(this, (function (exports) { 'use strict';
 
+  function _iterableToArrayLimit(r, l) {
+    var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
+    if (null != t) {
+      var e,
+        n,
+        i,
+        u,
+        a = [],
+        f = !0,
+        o = !1;
+      try {
+        if (i = (t = t.call(r)).next, 0 === l) {
+          if (Object(t) !== t) return;
+          f = !1;
+        } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0);
+      } catch (r) {
+        o = !0, n = r;
+      } finally {
+        try {
+          if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return;
+        } finally {
+          if (o) throw n;
+        }
+      }
+      return a;
+    }
+  }
   function ownKeys(e, r) {
     var t = Object.keys(e);
     if (Object.getOwnPropertySymbols) {
@@ -138,6 +165,28 @@
       return _possibleConstructorReturn(this, result);
     };
   }
+  function _slicedToArray(arr, i) {
+    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
+  }
+  function _arrayWithHoles(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+    return arr2;
+  }
+  function _nonIterableRest() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
   function _toPrimitive(input, hint) {
     if (typeof input !== "object" || input === null) return input;
     var prim = input[Symbol.toPrimitive];
@@ -228,8 +277,10 @@
       _classCallCheck(this, Color);
       _defineProperty(this, "_hex", void 0);
       _defineProperty(this, "_rgba", void 0);
+      _defineProperty(this, "_hsl", void 0);
       this._hex = hex;
       this._rgba = Color._getRgba(hex);
+      this._hsl = Color.getHsl(this.rgba);
     }
     /**
      * Gets this color's RGBA value as a tuple, on a scale from 0 to 255.
@@ -245,9 +296,7 @@
     }, {
       key: "normalizedRgba",
       get: function get() {
-        return this._rgba.map(function (value) {
-          return value / 255;
-        });
+        return Color.getNormalizedRgba(this.rgba);
       }
     }, {
       key: "hex",
@@ -264,6 +313,17 @@
       set: function set(value) {
         this._hex = BigInt(value);
         this._rgba = Color._getRgba(this._hex);
+      }
+      /**
+       * Gets this color's hsl (Hue, Saturation, Lightness) value, excluding the alpha channel.
+       * @note The hue value is in the range from 0 to 360 degrees.
+       * @note The saturation value is in the range of 0 to 100.
+       * @note the lightness value is in the range of 0 to 100.
+       */
+    }, {
+      key: "hsl",
+      get: function get() {
+        return this._hsl;
       }
       /**
        * The red channel of this color, on a scale from 0 to 255
@@ -353,23 +413,70 @@
       }
     }], [{
       key: "getRgba",
-      value: function getRgba(hex) {
-        return Color._getRgba(BigInt(hex));
+      value: function getRgba(color) {
+        if (typeof color === "number") {
+          return Color._getRgba(BigInt(color));
+        } else if (color instanceof Color) {
+          return color.rgba;
+        } else {
+          return color;
+        }
       }
     }, {
       key: "getHex",
-      value: function getHex(rgba) {
-        return Number(Color._getHex(rgba));
+      value: function getHex(color) {
+        if (typeof color === "number") {
+          return color;
+        } else if (color instanceof Color) {
+          return color.hex;
+        } else {
+          return Number(Color._getHex(color));
+        }
       }
     }, {
-      key: "_getRgba",
-      value: function _getRgba(hex) {
-        return [Number(hex >> 8n * 3n & 0xffn), Number(hex >> 8n * 2n & 0xffn), Number(hex >> 8n * 1n & 0xffn), Number(hex >> 8n * 0n & 0xffn)];
+      key: "getNormalizedRgba",
+      value: function getNormalizedRgba(color) {
+        if (typeof color === "number") {
+          return this.getNormalizedRgba(Color.getRgba(color));
+        } else if (color instanceof Color) {
+          return this.getNormalizedRgba(color.rgba);
+        } else {
+          var _color = _slicedToArray(color, 4),
+            red = _color[0],
+            green = _color[1],
+            blue = _color[2],
+            alpha = _color[3];
+          return [red / 255, green / 255, blue / 255, alpha / 255];
+        }
+      }
+    }, {
+      key: "getHsl",
+      value: function getHsl(color) {
+        if (typeof color === "number") {
+          return Color.getHsl(Color.getRgba(color));
+        } else if (color instanceof Color) {
+          return Color.getHsl(color.rgba);
+        } else {
+          var _Color$getNormalizedR = Color.getNormalizedRgba(color),
+            _Color$getNormalizedR2 = _slicedToArray(_Color$getNormalizedR, 3),
+            red = _Color$getNormalizedR2[0],
+            green = _Color$getNormalizedR2[1],
+            blue = _Color$getNormalizedR2[2];
+          var lightness = Math.max(red, green, blue);
+          var saturation = lightness - Math.min(red, green, blue);
+          var hue = saturation ? lightness === red ? (green - blue) / saturation : lightness === green ? 2 + (blue - red) / saturation : 4 + (red - green) / saturation : 0;
+          return [60 * hue < 0 ? 60 * hue + 360 : 60 * hue, 100 * (saturation ? lightness <= 0.5 ? saturation / (2 * lightness - saturation) : saturation / (2 - (2 * lightness - saturation)) : 0), 100 * (2 * lightness - saturation) / 2];
+        }
       }
     }, {
       key: "_getHex",
       value: function _getHex(rgba) {
         return BigInt(rgba[0]) << 8n * 3n | BigInt(rgba[1]) << 8n * 2n | BigInt(rgba[2]) << 8n * 1n | BigInt(rgba[3]) << 8n * 0n;
+      }
+    }, {
+      key: "_getRgba",
+      value: function _getRgba(hex) {
+        return [Number(hex >> 8n * 3n & 0xffn), Number(hex >> 8n * 2n & 0xffn), Number(hex >> 8n * 1n & 0xffn), Number(hex >> 8n * 0n & 0xffn)];
       }
     }, {
       key: "from",

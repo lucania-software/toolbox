@@ -1,8 +1,10 @@
 export type Rgba = readonly [number, number, number, number];
+export type Hsl = readonly [number, number, number];
 export type ColorSource = number | Rgba | Color;
 export declare class Color {
     private _hex;
     private _rgba;
+    private _hsl;
     private constructor();
     /**
      * Gets this color's RGBA value as a tuple, on a scale from 0 to 255.
@@ -20,6 +22,13 @@ export declare class Color {
      * Sets this color's hex value, including alpha channel (i.e. 0xFF00FFFF)
      */
     set hex(value: number);
+    /**
+     * Gets this color's hsl (Hue, Saturation, Lightness) value, excluding the alpha channel.
+     * @note The hue value is in the range from 0 to 360 degrees.
+     * @note The saturation value is in the range of 0 to 100.
+     * @note the lightness value is in the range of 0 to 100.
+     */
+    get hsl(): Hsl;
     /**
      * The red channel of this color, on a scale from 0 to 255
      */
@@ -60,10 +69,12 @@ export declare class Color {
      * @param weight The normalized weight from 0 to 1 of the mixture. 0 will result in all this color, 1 will result in all of the color defined by "source". Defaults to 0.5.
      */
     mix(source: ColorSource, weight?: number): void;
-    static getRgba(hex: number): Rgba;
-    static getHex(rgba: Rgba): number;
-    private static _getRgba;
+    static getRgba(color: ColorSource): Rgba;
+    static getHex(color: ColorSource): number;
+    static getNormalizedRgba(color: ColorSource): Rgba;
+    static getHsl(color: ColorSource): Hsl;
     private static _getHex;
+    static _getRgba(hex: bigint): Rgba;
     static from(source: ColorSource): Color;
     static readonly BLACK: Color;
     static readonly WHITE: Color;

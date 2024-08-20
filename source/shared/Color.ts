@@ -1,14 +1,17 @@
 export type Rgba = readonly [number, number, number, number];
+export type Hsl = readonly [number, number, number];
 export type ColorSource = number | Rgba | Color;
 
 export class Color {
 
     private _hex: bigint;
     private _rgba: Rgba;
+    private _hsl: Hsl;
 
     private constructor(hex: bigint) {
         this._hex = hex;
         this._rgba = Color._getRgba(hex);
+        this._hsl = Color.getHsl(this.rgba);
     }
 
     /**
@@ -20,7 +23,7 @@ export class Color {
      * Gets this color's RGBA value as a tuple, on a scale from 0 to 1.
      */
     public get normalizedRgba(): Rgba {
-        return this._rgba.map((value) => value / 255) as any;
+        return Color.getNormalizedRgba(this.rgba);
     };
 
     /**
@@ -34,6 +37,16 @@ export class Color {
     public set hex(value: number) {
         this._hex = BigInt(value);
         this._rgba = Color._getRgba(this._hex);
+    }
+
+    /**
+     * Gets this color's hsl (Hue, Saturation, Lightness) value, excluding the alpha channel.
+     * @note The hue value is in the range from 0 to 360 degrees.
+     * @note The saturation value is in the range of 0 to 100.
+     * @note the lightness value is in the range of 0 to 100.
+     */
+    public get hsl() {
+        return this._hsl;
     }
 
     /**
@@ -93,21 +106,78 @@ export class Color {
         ];
     }
 
-    public static getRgba(hex: number) {
-        return Color._getRgba(BigInt(hex));
+    public static getRgba(color: ColorSource): Rgba {
+        if (typeof color === "number") {
+            return Color._getRgba(BigInt(color));
+        } else if (color instanceof Color) {
+            return color.rgba;
+        } else {
+            return color;
+        }
     }
 
-    public static getHex(rgba: Rgba) {
-        return Number(Color._getHex(rgba));
+    public static getHex(color: ColorSource): number {
+        if (typeof color === "number") {
+            return color;
+        } else if (color instanceof Color) {
+            return color.hex;
+        } else {
+            return Number(Color._getHex(color));
+        }
     }
 
-    private static _getRgba(hex: bigint): Rgba {
-        return [
-            Number((hex >> 8n * 3n) & 0xFFn),
-            Number((hex >> 8n * 2n) & 0xFFn),
-            Number((hex >> 8n * 1n) & 0xFFn),
-            Number((hex >> 8n * 0n) & 0xFFn)
-        ];
+    public static getNormalizedRgba(color: ColorSource): Rgba {
+        if (typeof color === "number") {
+            return this.getNormalizedRgba(Color.getRgba(color));
+        } else if (color instanceof Color) {
+            return this.getNormalizedRgba(color.rgba);
+        } else {
+            const [red, green, blue, alpha] = color;
+            return [
+                red / 255,
+                green / 255,
+                blue / 255,
+                alpha / 255
+            ];
+        }
+    }
+
+    public static getHsl(color: ColorSource): Hsl {
+        if (typeof color === "number") {
+            return Color.getHsl(Color.getRgba(color));
+        } else if (color instanceof Color) {
+            return Color.getHsl(color.rgba);
+        } else {
+            const [red, green, blue] = Color.getNormalizedRgba(color);
+            const lightness = Math.max(red, green, blue);
+            const saturation = lightness - Math.min(red, green, blue);
+            const hue = (
+                saturation ? (
+                    lightness === red ? (
+                        (green - blue) / saturation
+                    ) : (
+                        lightness === green ? (
+                            2 + (blue - red) / saturation
+                        ) : (
+                            4 + (red - green) / saturation
+                        )
+                    )
+                ) : (
+                    0
+                )
+            );
+            return [
+                60 * hue < 0 ? 60 * hue + 360 : 60 * hue,
+                100 * (saturation ? (
+                    lightness <= 0.5 ? (
+                        saturation / (2 * lightness - saturation)
+                    ) : (
+                        saturation / (2 - (2 * lightness - saturation))
+                    )
+                ) : 0),
+                (100 * (2 * lightness - saturation)) / 2,
+            ];
+        }
     }
 
     private static _getHex(rgba: Rgba) {
@@ -117,6 +187,15 @@ export class Color {
             BigInt(rgba[2]) << (8n * 1n) |
             BigInt(rgba[3]) << (8n * 0n)
         );
+    }
+
+    public static _getRgba(hex: bigint): Rgba {
+        return [
+            Number((hex >> 8n * 3n) & 0xFFn),
+            Number((hex >> 8n * 2n) & 0xFFn),
+            Number((hex >> 8n * 1n) & 0xFFn),
+            Number((hex >> 8n * 0n) & 0xFFn)
+        ];
     }
 
     public static from(source: ColorSource): Color {
