@@ -187,6 +187,57 @@
   function _nonIterableRest() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
+  function _createForOfIteratorHelper(o, allowArrayLike) {
+    var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
+    if (!it) {
+      if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+        if (it) o = it;
+        var i = 0;
+        var F = function () {};
+        return {
+          s: F,
+          n: function () {
+            if (i >= o.length) return {
+              done: true
+            };
+            return {
+              done: false,
+              value: o[i++]
+            };
+          },
+          e: function (e) {
+            throw e;
+          },
+          f: F
+        };
+      }
+      throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+    }
+    var normalCompletion = true,
+      didErr = false,
+      err;
+    return {
+      s: function () {
+        it = it.call(o);
+      },
+      n: function () {
+        var step = it.next();
+        normalCompletion = step.done;
+        return step;
+      },
+      e: function (e) {
+        didErr = true;
+        err = e;
+      },
+      f: function () {
+        try {
+          if (!normalCompletion && it.return != null) it.return();
+        } finally {
+          if (didErr) throw err;
+        }
+      }
+    };
+  }
   function _toPrimitive(input, hint) {
     if (typeof input !== "object" || input === null) return input;
     var prim = input[Symbol.toPrimitive];
@@ -277,10 +328,8 @@
       _classCallCheck(this, Color);
       _defineProperty(this, "_hex", void 0);
       _defineProperty(this, "_rgba", void 0);
-      _defineProperty(this, "_hsl", void 0);
       this._hex = hex;
       this._rgba = Color._getRgba(hex);
-      this._hsl = Color.getHsl(this.rgba);
     }
     /**
      * Gets this color's RGBA value as a tuple, on a scale from 0 to 255.
@@ -296,15 +345,37 @@
     }, {
       key: "normalizedRgba",
       get: function get() {
-        return Color.getNormalizedRgba(this.rgba);
+        return [this.normalizedRed, this.normalizedGreen, this.normalizedBlue, this.normalizedAlpha];
       }
     }, {
-      key: "hex",
+      key: "cielab",
       get:
+      /**
+       * Gets this color's CIELAB value as a tuple.
+       * https://en.wikipedia.org/wiki/CIELAB_color_space
+       */
+      function get() {
+        var _this$normalizedRgba = _slicedToArray(this.normalizedRgba, 3),
+          red = _this$normalizedRgba[0],
+          green = _this$normalizedRgba[1],
+          blue = _this$normalizedRgba[2];
+        red = red > 0.04045 ? Math.pow((red + 0.055) / 1.055, 2.4) : red / 12.92;
+        green = green > 0.04045 ? Math.pow((green + 0.055) / 1.055, 2.4) : green / 12.92;
+        blue = blue > 0.04045 ? Math.pow((blue + 0.055) / 1.055, 2.4) : blue / 12.92;
+        var x = (red * 0.4124 + green * 0.3576 + blue * 0.1805) / 0.95047;
+        var y = (red * 0.2126 + green * 0.7152 + blue * 0.0722) / 1.00000;
+        var z = (red * 0.0193 + green * 0.1192 + blue * 0.9505) / 1.08883;
+        x = x > 0.008856 ? Math.pow(x, 1 / 3) : 7.787 * x + 16 / 116;
+        y = y > 0.008856 ? Math.pow(y, 1 / 3) : 7.787 * y + 16 / 116;
+        z = z > 0.008856 ? Math.pow(z, 1 / 3) : 7.787 * z + 16 / 116;
+        return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+      }
       /**
        * Gets this color's hex value, including alpha channel (i.e. 0xFF00FFFF)
        */
-      function get() {
+    }, {
+      key: "hex",
+      get: function get() {
         return Number(this._hex);
       }
       /**
@@ -323,7 +394,7 @@
     }, {
       key: "hsl",
       get: function get() {
-        return this._hsl;
+        return Color.getHsl(this);
       }
       /**
        * The red channel of this color, on a scale from 0 to 255
@@ -411,62 +482,86 @@
         var color = Color.from(source);
         this._rgba = [this.red + (color.red - this.red) * weight, this.green + (color.green - this.green) * weight, this.blue + (color.blue - this.blue) * weight, this.alpha + (color.alpha - this.alpha) * weight];
       }
+    }, {
+      key: "chooseFromPalette",
+      value: function chooseFromPalette(palette) {
+        var _this = this;
+        var _palette = _slicedToArray(palette, 1),
+          color = _palette[0];
+        var result = palette.reduce(function (accumulator, color) {
+          var delta = Color.getCielabDelta(_this, color);
+          return accumulator.delta === undefined || delta < accumulator.delta ? {
+            color: color,
+            delta: delta
+          } : accumulator;
+        }, {
+          color: color
+        });
+        return result.color;
+      }
+    }, {
+      key: "toString",
+      value: function toString() {
+        return "[(r: ".concat(this.red, ", g: ").concat(this.green, ", b: ").concat(this.blue, "), (#").concat(this.hex.toString(16).padStart(8, "0"), ")]");
+      }
     }], [{
       key: "getRgba",
       value: function getRgba(color) {
-        if (typeof color === "number") {
-          return Color._getRgba(BigInt(color));
-        } else if (color instanceof Color) {
-          return color.rgba;
-        } else {
-          return color;
-        }
+        return Color.from(color).rgba;
       }
     }, {
       key: "getHex",
       value: function getHex(color) {
-        if (typeof color === "number") {
-          return color;
-        } else if (color instanceof Color) {
-          return color.hex;
-        } else {
-          return Number(Color._getHex(color));
-        }
+        return Color.from(color).hex;
       }
     }, {
       key: "getNormalizedRgba",
       value: function getNormalizedRgba(color) {
-        if (typeof color === "number") {
-          return this.getNormalizedRgba(Color.getRgba(color));
-        } else if (color instanceof Color) {
-          return this.getNormalizedRgba(color.rgba);
-        } else {
-          var _color = _slicedToArray(color, 4),
-            red = _color[0],
-            green = _color[1],
-            blue = _color[2],
-            alpha = _color[3];
-          return [red / 255, green / 255, blue / 255, alpha / 255];
-        }
+        return Color.from(color).normalizedRgba;
       }
     }, {
       key: "getHsl",
       value: function getHsl(color) {
-        if (typeof color === "number") {
-          return Color.getHsl(Color.getRgba(color));
-        } else if (color instanceof Color) {
-          return Color.getHsl(color.rgba);
-        } else {
-          var _Color$getNormalizedR = Color.getNormalizedRgba(color),
-            _Color$getNormalizedR2 = _slicedToArray(_Color$getNormalizedR, 3),
-            red = _Color$getNormalizedR2[0],
-            green = _Color$getNormalizedR2[1],
-            blue = _Color$getNormalizedR2[2];
-          var lightness = Math.max(red, green, blue);
-          var saturation = lightness - Math.min(red, green, blue);
-          var hue = saturation ? lightness === red ? (green - blue) / saturation : lightness === green ? 2 + (blue - red) / saturation : 4 + (red - green) / saturation : 0;
-          return [60 * hue < 0 ? 60 * hue + 360 : 60 * hue, 100 * (saturation ? lightness <= 0.5 ? saturation / (2 * lightness - saturation) : saturation / (2 - (2 * lightness - saturation)) : 0), 100 * (2 * lightness - saturation) / 2];
-        }
+        var _Color$getNormalizedR = Color.getNormalizedRgba(color),
+          _Color$getNormalizedR2 = _slicedToArray(_Color$getNormalizedR, 3),
+          red = _Color$getNormalizedR2[0],
+          green = _Color$getNormalizedR2[1],
+          blue = _Color$getNormalizedR2[2];
+        var lightness = Math.max(red, green, blue);
+        var saturation = lightness - Math.min(red, green, blue);
+        var hue = saturation ? lightness === red ? (green - blue) / saturation : lightness === green ? 2 + (blue - red) / saturation : 4 + (red - green) / saturation : 0;
+        return [60 * hue < 0 ? 60 * hue + 360 : 60 * hue, 100 * (saturation ? lightness <= 0.5 ? saturation / (2 * lightness - saturation) : saturation / (2 - (2 * lightness - saturation)) : 0), 100 * (2 * lightness - saturation) / 2];
+      }
+      /**
+       * Gets the difference between two colors via Cielab ΔE*.
+       * https://en.wikipedia.org/wiki/Color_difference#CIELAB_%CE%94E*
+       *
+       * @param colorA
+       * @param colorB
+       * @returns
+       */
+    }, {
+      key: "getCielabDelta",
+      value: function getCielabDelta(colorA, colorB) {
+        colorA = Color.from(colorA);
+        colorB = Color.from(colorB);
+        var labA = colorA.cielab;
+        var labB = colorB.cielab;
+        var deltaL = labA[0] - labB[0];
+        var deltaA = labA[1] - labB[1];
+        var deltaB = labA[2] - labB[2];
+        var c1 = Math.sqrt(labA[1] * labA[1] + labA[2] * labA[2]);
+        var c2 = Math.sqrt(labB[1] * labB[1] + labB[2] * labB[2]);
+        var deltaC = c1 - c2;
+        var deltaH = deltaA * deltaA + deltaB * deltaB - deltaC * deltaC;
+        deltaH = deltaH < 0 ? 0 : Math.sqrt(deltaH);
+        var sc = 1.0 + 0.045 * c1;
+        var sh = 1.0 + 0.015 * c1;
+        var deltaLKlsl = deltaL / 1.0;
+        var deltaCkcsc = deltaC / sc;
+        var deltaHkhsh = deltaH / sh;
+        var i = deltaLKlsl * deltaLKlsl + deltaCkcsc * deltaCkcsc + deltaHkhsh * deltaHkhsh;
+        return i < 0 ? 0 : Math.sqrt(i);
       }
     }, {
       key: "_getHex",
@@ -558,6 +653,14 @@
      * ```
      */
     ConsoleColor.Common = _objectSpread2(_objectSpread2({}, Fore), Special);
+    function closest(color) {
+      var closestColor = Color.from(color).chooseFromPalette(ConsoleColor.SupportedColors);
+      return "\x1B[38;5;".concat(ConsoleColor.SupportedColors.indexOf(closestColor), "m");
+    }
+    ConsoleColor.closest = closest;
+    ConsoleColor.SupportedColors = [0X000000FF, 0XCD3131FF, 0X0DBC79FF, 0XE5E510FF, 0X2472C8FF, 0XBC3FBCFF, 0X11A8CDFF, 0XE5E5E5FF, 0X666666FF, 0XF14C4CFF, 0X23D18BFF, 0XF5F543FF, 0X3B8EEAFF, 0XD670D6FF, 0X29B8DBFF, 0XE5E5E5FF, 0X000000FF, 0X00005FFF, 0X000087FF, 0X0000AFFF, 0X0000D7FF, 0X0000FFFF, 0X005F00FF, 0X005F5FFF, 0X005F87FF, 0X005FAFFF, 0X005FD7FF, 0X005FFFFF, 0X008700FF, 0X00875FFF, 0X008787FF, 0X0087AFFF, 0X0087D7FF, 0X0087FFFF, 0X00AF00FF, 0X00AF5FFF, 0X00AF87FF, 0X00AFAFFF, 0X00AFD7FF, 0X00AFFFFF, 0X00D700FF, 0X00D75FFF, 0X00D787FF, 0X00D7AFFF, 0X00D7D7FF, 0X00D7FFFF, 0X00FF00FF, 0X00FF5FFF, 0X00FF87FF, 0X00FFAFFF, 0X00FFD7FF, 0X00FFFFFF, 0X5F0000FF, 0X5F005FFF, 0X5F0087FF, 0X5F00AFFF, 0X5F00D7FF, 0X5F00FFFF, 0X5F5F00FF, 0X5F5F5FFF, 0X5F5F87FF, 0X5F5FAFFF, 0X5F5FD7FF, 0X5F5FFFFF, 0X5F8700FF, 0X5F875FFF, 0X5F8787FF, 0X5F87AFFF, 0X5F87D7FF, 0X5F87FFFF, 0X5FAF00FF, 0X5FAF5FFF, 0X5FAF87FF, 0X5FAFAFFF, 0X5FAFD7FF, 0X5FAFFFFF, 0X5FD700FF, 0X5FD75FFF, 0X5FD787FF, 0X5FD7AFFF, 0X5FD7D7FF, 0X5FD7FFFF, 0X5FFF00FF, 0X5FFF5FFF, 0X5FFF87FF, 0X5FFFAFFF, 0X5FFFD7FF, 0X5FFFFFFF, 0X870000FF, 0X87005FFF, 0X870087FF, 0X8700AFFF, 0X8700D7FF, 0X8700FFFF, 0X875F00FF, 0X875F5FFF, 0X875F87FF, 0X875FAFFF, 0X875FD7FF, 0X875FFFFF, 0X878700FF, 0X87875FFF, 0X878787FF, 0X8787AFFF, 0X8787D7FF, 0X8787FFFF, 0X87AF00FF, 0X87AF5FFF, 0X87AF87FF, 0X87AFAFFF, 0X87AFD7FF, 0X87AFFFFF, 0X87D700FF, 0X87D75FFF, 0X87D787FF, 0X87D7AFFF, 0X87D7D7FF, 0X87D7FFFF, 0X87FF00FF, 0X87FF5FFF, 0X87FF87FF, 0X87FFAFFF, 0X87FFD7FF, 0X87FFFFFF, 0XAF0000FF, 0XAF005FFF, 0XAF0087FF, 0XAF00AFFF, 0XAF00D7FF, 0XAF00FFFF, 0XAF5F00FF, 0XAF5F5FFF, 0XAF5F87FF, 0XAF5FAFFF, 0XAF5FD7FF, 0XAF5FFFFF, 0XAF8700FF, 0XAF875FFF, 0XAF8787FF, 0XAF87AFFF, 0XAF87D7FF, 0XAF87FFFF, 0XAFAF00FF, 0XAFAF5FFF, 0XAFAF87FF, 0XAFAFAFFF, 0XAFAFD7FF, 0XAFAFFFFF, 0XAFD700FF, 0XAFD75FFF, 0XAFD787FF, 0XAFD7AFFF, 0XAFD7D7FF, 0XAFD7FFFF, 0XAFFF00FF, 0XAFFF5FFF, 0XAFFF87FF, 0XAFFFAFFF, 0XAFFFD7FF, 0XAFFFFFFF, 0XD70000FF, 0XD7005FFF, 0XD70087FF, 0XD700AFFF, 0XD700D7FF, 0XD700FFFF, 0XD75F00FF, 0XD75F5FFF, 0XD75F87FF, 0XD75FAFFF, 0XD75FD7FF, 0XD75FFFFF, 0XD78700FF, 0XD7875FFF, 0XD78787FF, 0XD787AFFF, 0XD787D7FF, 0XD787FFFF, 0XD7AF00FF, 0XD7AF5FFF, 0XD7AF87FF, 0XD7AFAFFF, 0XD7AFD7FF, 0XD7AFFFFF, 0XD7D700FF, 0XD7D75FFF, 0XD7D787FF, 0XD7D7AFFF, 0XD7D7D7FF, 0XD7D7FFFF, 0XD7FF00FF, 0XD7FF5FFF, 0XD7FF87FF, 0XD7FFAFFF, 0XD7FFD7FF, 0XD7FFFFFF, 0XFF0000FF, 0XFF005FFF, 0XFF0087FF, 0XFF00AFFF, 0XFF00D7FF, 0XFF00FFFF, 0XFF5F00FF, 0XFF5F5FFF, 0XFF5F87FF, 0XFF5FAFFF, 0XFF5FD7FF, 0XFF5FFFFF, 0XFF8700FF, 0XFF875FFF, 0XFF8787FF, 0XFF87AFFF, 0XFF87D7FF, 0XFF87FFFF, 0XFFAF00FF, 0XFFAF5FFF, 0XFFAF87FF, 0XFFAFAFFF, 0XFFAFD7FF, 0XFFAFFFFF, 0XFFD700FF, 0XFFD75FFF, 0XFFD787FF, 0XFFD7AFFF, 0XFFD7D7FF, 0XFFD7FFFF, 0XFFFF00FF, 0XFFFF5FFF, 0XFFFF87FF, 0XFFFFAFFF, 0XFFFFD7FF, 0XFFFFFFFF, 0X080808FF, 0X121212FF, 0X1C1C1CFF, 0X262626FF, 0X303030FF, 0X3A3A3AFF, 0X444444FF, 0X4E4E4EFF, 0X585858FF, 0X626262FF, 0X6C6C6CFF, 0X767676FF, 0X808080FF, 0X8A8A8AFF, 0X949494FF, 0X9E9E9EFF, 0XA8A8A8FF, 0XB2B2B2FF, 0XBCBCBCFF, 0XC6C6C6FF, 0XD0D0D0FF, 0XDADADAFF, 0XE4E4E4FF, 0XEEEEEEFF].map(function (hex) {
+      return Color.from(hex);
+    });
   })(exports.ConsoleColor || (exports.ConsoleColor = {}));
 
   /**
@@ -1272,23 +1375,40 @@
      * Creates a copy of {@link target}.
      * @param target The target object to clone.
      * @param deep True to perform a deep copy, false to perform a shallow copy.
+     *
+     * @note When performing deep copies, only "plain old data" will be processed. If a class instance is encountered, it WILL NOT
+     * be copied!
+     *
      * @returns A copy of {@link target}.
      */
     function clone(target) {
       var deep = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       if (deep) {
-        var objectClone = Array.isArray(target) ? [] : {};
-        Data.walk(target, function (_, property, path) {
-          if (_typeof(property) !== "object") {
-            Data.set(objectClone, path, property);
-          } else if (property === null) {
-            Data.set(objectClone, path, null);
-          } else if (Object.keys(property).length === 0) {
-            Data.set(objectClone, path, Array.isArray(property) ? [] : {});
+        if (_typeof(target) === "object" && target !== null) {
+          if (Array.isArray(target)) {
+            var result = [];
+            var _iterator = _createForOfIteratorHelper(target),
+              _step;
+            try {
+              for (_iterator.s(); !(_step = _iterator.n()).done;) {
+                var item = _step.value;
+                result.push(clone(item, deep));
+              }
+            } catch (err) {
+              _iterator.e(err);
+            } finally {
+              _iterator.f();
+            }
+            return result;
+          } else if (target.constructor.name === "Object") {
+            var _result = {};
+            for (var key in target) {
+              _result[key] = clone(target[key], deep);
+            }
+            return _result;
           }
-          return false;
-        });
-        return objectClone;
+        }
+        return target;
       } else {
         return _objectSpread2({}, target);
       }

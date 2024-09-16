@@ -1,17 +1,16 @@
 export type Rgba = readonly [number, number, number, number];
 export type Hsl = readonly [number, number, number];
+export type Cielab = readonly [number, number, number];
 export type ColorSource = number | Rgba | Color;
 
 export class Color {
 
     private _hex: bigint;
     private _rgba: Rgba;
-    private _hsl: Hsl;
 
     private constructor(hex: bigint) {
         this._hex = hex;
         this._rgba = Color._getRgba(hex);
-        this._hsl = Color.getHsl(this.rgba);
     }
 
     /**
@@ -23,8 +22,31 @@ export class Color {
      * Gets this color's RGBA value as a tuple, on a scale from 0 to 1.
      */
     public get normalizedRgba(): Rgba {
-        return Color.getNormalizedRgba(this.rgba);
+        return [
+            this.normalizedRed,
+            this.normalizedGreen,
+            this.normalizedBlue,
+            this.normalizedAlpha
+        ];
     };
+
+    /**
+     * Gets this color's CIELAB value as a tuple.
+     * https://en.wikipedia.org/wiki/CIELAB_color_space
+     */
+    public get cielab(): Cielab {
+        let [red, green, blue] = this.normalizedRgba;
+        red = (red > 0.04045) ? Math.pow((red + 0.055) / 1.055, 2.4) : red / 12.92;
+        green = (green > 0.04045) ? Math.pow((green + 0.055) / 1.055, 2.4) : green / 12.92;
+        blue = (blue > 0.04045) ? Math.pow((blue + 0.055) / 1.055, 2.4) : blue / 12.92;
+        let x = (red * 0.4124 + green * 0.3576 + blue * 0.1805) / 0.95047;
+        let y = (red * 0.2126 + green * 0.7152 + blue * 0.0722) / 1.00000;
+        let z = (red * 0.0193 + green * 0.1192 + blue * 0.9505) / 1.08883;
+        x = (x > 0.008856) ? Math.pow(x, 1 / 3) : (7.787 * x) + 16 / 116;
+        y = (y > 0.008856) ? Math.pow(y, 1 / 3) : (7.787 * y) + 16 / 116;
+        z = (z > 0.008856) ? Math.pow(z, 1 / 3) : (7.787 * z) + 16 / 116;
+        return [(116 * y) - 16, 500 * (x - y), 200 * (y - z)];
+    }
 
     /**
      * Gets this color's hex value, including alpha channel (i.e. 0xFF00FFFF)
@@ -46,7 +68,7 @@ export class Color {
      * @note the lightness value is in the range of 0 to 100.
      */
     public get hsl() {
-        return this._hsl;
+        return Color.getHsl(this);
     }
 
     /**
@@ -106,78 +128,91 @@ export class Color {
         ];
     }
 
+    public chooseFromPalette(palette: Color[]) {
+        const [color] = palette;
+        const result = palette.reduce<{ color: Color, delta?: number }>((accumulator, color) => {
+            const delta = Color.getCielabDelta(this, color);
+            return accumulator.delta === undefined || delta < accumulator.delta ? { color, delta } : accumulator;
+        }, { color });
+        return result.color;
+    }
+
+    public toString() {
+        return `[(r: ${this.red}, g: ${this.green}, b: ${this.blue}), (#${this.hex.toString(16).padStart(8, "0")})]`;
+    }
+
     public static getRgba(color: ColorSource): Rgba {
-        if (typeof color === "number") {
-            return Color._getRgba(BigInt(color));
-        } else if (color instanceof Color) {
-            return color.rgba;
-        } else {
-            return color;
-        }
+        return Color.from(color).rgba;
     }
 
     public static getHex(color: ColorSource): number {
-        if (typeof color === "number") {
-            return color;
-        } else if (color instanceof Color) {
-            return color.hex;
-        } else {
-            return Number(Color._getHex(color));
-        }
+        return Color.from(color).hex;
     }
 
     public static getNormalizedRgba(color: ColorSource): Rgba {
-        if (typeof color === "number") {
-            return this.getNormalizedRgba(Color.getRgba(color));
-        } else if (color instanceof Color) {
-            return this.getNormalizedRgba(color.rgba);
-        } else {
-            const [red, green, blue, alpha] = color;
-            return [
-                red / 255,
-                green / 255,
-                blue / 255,
-                alpha / 255
-            ];
-        }
+        return Color.from(color).normalizedRgba;
     }
 
     public static getHsl(color: ColorSource): Hsl {
-        if (typeof color === "number") {
-            return Color.getHsl(Color.getRgba(color));
-        } else if (color instanceof Color) {
-            return Color.getHsl(color.rgba);
-        } else {
-            const [red, green, blue] = Color.getNormalizedRgba(color);
-            const lightness = Math.max(red, green, blue);
-            const saturation = lightness - Math.min(red, green, blue);
-            const hue = (
-                saturation ? (
-                    lightness === red ? (
-                        (green - blue) / saturation
-                    ) : (
-                        lightness === green ? (
-                            2 + (blue - red) / saturation
-                        ) : (
-                            4 + (red - green) / saturation
-                        )
-                    )
+        const [red, green, blue] = Color.getNormalizedRgba(color);
+        const lightness = Math.max(red, green, blue);
+        const saturation = lightness - Math.min(red, green, blue);
+        const hue = (
+            saturation ? (
+                lightness === red ? (
+                    (green - blue) / saturation
                 ) : (
-                    0
-                )
-            );
-            return [
-                60 * hue < 0 ? 60 * hue + 360 : 60 * hue,
-                100 * (saturation ? (
-                    lightness <= 0.5 ? (
-                        saturation / (2 * lightness - saturation)
+                    lightness === green ? (
+                        2 + (blue - red) / saturation
                     ) : (
-                        saturation / (2 - (2 * lightness - saturation))
+                        4 + (red - green) / saturation
                     )
-                ) : 0),
-                (100 * (2 * lightness - saturation)) / 2,
-            ];
-        }
+                )
+            ) : (
+                0
+            )
+        );
+        return [
+            60 * hue < 0 ? 60 * hue + 360 : 60 * hue,
+            100 * (saturation ? (
+                lightness <= 0.5 ? (
+                    saturation / (2 * lightness - saturation)
+                ) : (
+                    saturation / (2 - (2 * lightness - saturation))
+                )
+            ) : 0),
+            (100 * (2 * lightness - saturation)) / 2,
+        ];
+    }
+
+    /**
+     * Gets the difference between two colors via Cielab ΔE*.
+     * https://en.wikipedia.org/wiki/Color_difference#CIELAB_%CE%94E*
+     * 
+     * @param colorA 
+     * @param colorB 
+     * @returns 
+     */
+    public static getCielabDelta(colorA: ColorSource, colorB: ColorSource) {
+        colorA = Color.from(colorA);
+        colorB = Color.from(colorB);
+        const labA = colorA.cielab;
+        const labB = colorB.cielab;
+        const deltaL = labA[0] - labB[0];
+        const deltaA = labA[1] - labB[1];
+        const deltaB = labA[2] - labB[2];
+        const c1 = Math.sqrt(labA[1] * labA[1] + labA[2] * labA[2]);
+        const c2 = Math.sqrt(labB[1] * labB[1] + labB[2] * labB[2]);
+        const deltaC = c1 - c2;
+        let deltaH = deltaA * deltaA + deltaB * deltaB - deltaC * deltaC;
+        deltaH = deltaH < 0 ? 0 : Math.sqrt(deltaH);
+        const sc = 1.0 + 0.045 * c1;
+        const sh = 1.0 + 0.015 * c1;
+        const deltaLKlsl = deltaL / (1.0);
+        const deltaCkcsc = deltaC / (sc);
+        const deltaHkhsh = deltaH / (sh);
+        const i = deltaLKlsl * deltaLKlsl + deltaCkcsc * deltaCkcsc + deltaHkhsh * deltaHkhsh;
+        return i < 0 ? 0 : Math.sqrt(i);
     }
 
     private static _getHex(rgba: Rgba) {

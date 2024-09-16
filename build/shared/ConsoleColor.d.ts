@@ -1,3 +1,4 @@
+import { Color, ColorSource } from "./Color";
 /**
  * Used for printing to the console in Color! :D
  */
@@ -70,4 +71,6 @@ export declare namespace ConsoleColor {
         white: "\u001B[37m";
         gray: "\u001B[90m";
     };
+    function closest(color: ColorSource): string;
+    const SupportedColors: Color[];
 }
