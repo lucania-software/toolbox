@@ -176,22 +176,30 @@ export namespace Data {
      * Creates a copy of {@link target}.
      * @param target The target object to clone.
      * @param deep True to perform a deep copy, false to perform a shallow copy.
+     * 
+     * @note When performing deep copies, only "plain old data" will be processed. If a class instance is encountered, it WILL NOT
+     * be copied!
+     * 
      * @returns A copy of {@link target}.
      */
     export function clone<Target extends object>(target: Target, deep: boolean = false): Target {
         if (deep) {
-            const objectClone = Array.isArray(target) ? [] : {};
-            Data.walk(target, (_, property, path) => {
-                if (typeof property !== "object") {
-                    Data.set(objectClone, path, property);
-                } else if (property === null) {
-                    Data.set(objectClone, path, null);
-                } else if (Object.keys(property).length === 0) {
-                    Data.set(objectClone, path, Array.isArray(property) ? [] : {});
+            if (typeof target === "object" && target !== null) {
+                if (Array.isArray(target)) {
+                    let result: any = [];
+                    for (const item of target) {
+                        result.push(clone(item, deep));
+                    }
+                    return result;
+                } else if (target.constructor.name === "Object") {
+                    const result: any = {};
+                    for (const key in target) {
+                        result[key] = clone((target as any)[key], deep);
+                    }
+                    return result;
                 }
-                return false;
-            });
-            return objectClone as Target;
+            }
+            return target;
         } else {
             return { ...target };
         }
