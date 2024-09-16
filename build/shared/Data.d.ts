@@ -79,6 +79,10 @@ export declare namespace Data {
      * Creates a copy of {@link target}.
      * @param target The target object to clone.
      * @param deep True to perform a deep copy, false to perform a shallow copy.
+     *
+     * @note When performing deep copies, only "plain old data" will be processed. If a class instance is encountered, it WILL NOT
+     * be copied!
+     *
      * @returns A copy of {@link target}.
      */
     function clone<Target extends object>(target: Target, deep?: boolean): Target;
