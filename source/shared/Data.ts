@@ -29,14 +29,21 @@ export type TypeAtPath<Target, Path extends string> = (
     )
 );
 
-// OLD TypeAtPath doesn't allow getting optional parameters
-// export type TypeAtPath<Target, Path extends string> = (
-//     Path extends `${infer Head}.${infer Tail}` ? (
-//         Target extends { [Key in Head]: any } ? TypeAtPath<Target[Head], Tail> : undefined
-//     ) : (
-//         Target extends { [Key in Path]: any } ? Target[Path] : undefined
-//     )
-// );
+export type ObjectPaths<Type> = (
+    Type extends any[] ? (
+        `${number}`
+    ) : (
+        {
+            [Key in keyof Type]-?: (
+                Key extends string ? (
+                    Type[Key] extends object ? (
+                        Key | `${Key}.${ObjectPaths<Type[Key]>}`
+                    ) : Key
+                ) : never
+            )
+        }[keyof Type]
+    )
+);
 
 export interface WalkObjectCallback {
 
@@ -245,6 +252,31 @@ export namespace Data {
             return false;
         });
         return flattenedTarget;
+    }
+
+    /**
+     * Flattens an object's nested hierarchy.
+     * I.E. { name: { first: "Jeremy", last: "Bankes" } } -> { "name.first": "Jeremy", "name.last": "Bankes" }
+     * 
+     * @note This is an alternate implementation of {@link Data.flatten} that takes a simpler recursive approach over using {@link Data.walk}.
+     * 
+     * @param target The target object.
+     * @param keys 
+     * @returns A flattened version of {@link target} without any nesting.
+     */
+    export function alternateFlatten(target: any, keys: string[] = []): any {
+        const flattened: any = {};
+        if (Array.isArray(target) || typeof target === "object" && target !== null && target.constructor.name === "Object") {
+            for (const key in target) {
+                Object.assign(flattened, alternateFlatten(target[key], [...keys, key]));
+            }
+        } else if (keys.length === 0) {
+            return target;
+        } else {
+            const path = keys.join(".");
+            flattened[path] = target;
+        }
+        return flattened;
     }
 
     /**

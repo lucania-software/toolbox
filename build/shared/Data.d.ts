@@ -16,6 +16,9 @@ export type TypeAtPath<Target, Path extends string> = (Path extends `${infer Hea
 } ? TypeAtPath<Target[Head], Tail> : undefined) : (Target extends {
     [Key in Path]?: any;
 } ? Target[Path] : undefined));
+export type ObjectPaths<Type> = (Type extends any[] ? (`${number}`) : ({
+    [Key in keyof Type]-?: (Key extends string ? (Type[Key] extends object ? (Key | `${Key}.${ObjectPaths<Type[Key]>}`) : Key) : never);
+}[keyof Type]));
 export interface WalkObjectCallback {
     /**
      * @param target The direct parent object of {@link property}. (Not necessarily the object being walked.)
