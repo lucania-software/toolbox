@@ -1,5 +1,3 @@
-/// <reference types="node" />
-/// <reference types="node" />
 export interface FileMeta {
     path: string;
     size: number;

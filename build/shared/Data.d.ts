@@ -106,6 +106,17 @@ export declare namespace Data {
      */
     function flatten(target: any): any;
     /**
+     * Flattens an object's nested hierarchy.
+     * I.E. { name: { first: "Jeremy", last: "Bankes" } } -> { "name.first": "Jeremy", "name.last": "Bankes" }
+     *
+     * @note This is an alternate implementation of {@link Data.flatten} that takes a simpler recursive approach over using {@link Data.walk}.
+     *
+     * @param target The target object.
+     * @param keys
+     * @returns A flattened version of {@link target} without any nesting.
+     */
+    function alternateFlatten(target: any, keys?: string[]): any;
+    /**
      * Converts a flattened object back into an object with a nested hierarchy.
      * @param target
      * @returns a hierarchized version of {@link target} with a nested hierarchy.

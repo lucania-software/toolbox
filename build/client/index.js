@@ -408,7 +408,6 @@
   }
   function _createClass(Constructor, protoProps, staticProps) {
     if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties(Constructor, staticProps);
     Object.defineProperty(Constructor, "prototype", {
       writable: false
     });
@@ -465,7 +464,7 @@
   function _createForOfIteratorHelper(o, allowArrayLike) {
     var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
     if (!it) {
-      if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+      if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike) {
         if (it) o = it;
         var i = 0;
         var F = function () {};
@@ -561,7 +560,7 @@
       return _request.apply(this, arguments);
     }
     function _request() {
-      _request = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(url) {
+      _request = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(url) {
         var method,
           body,
           headers,
@@ -612,7 +611,7 @@
       return _get.apply(this, arguments);
     }
     function _get() {
-      _get = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(url, parameters) {
+      _get = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2(url, parameters) {
         var headers,
           _args2 = arguments;
         return _regeneratorRuntime().wrap(function _callee2$(_context2) {
@@ -647,7 +646,7 @@
       return _post.apply(this, arguments);
     }
     function _post() {
-      _post = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(url) {
+      _post = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3(url) {
         var body,
           headers,
           _args3 = arguments;
@@ -681,7 +680,7 @@
       return _put.apply(this, arguments);
     }
     function _put() {
-      _put = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(url, body) {
+      _put = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4(url, body) {
         var headers,
           _args4 = arguments;
         return _regeneratorRuntime().wrap(function _callee4$(_context4) {
@@ -713,7 +712,7 @@
       return _patch.apply(this, arguments);
     }
     function _patch() {
-      _patch = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(url, body) {
+      _patch = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5(url, body) {
         var headers,
           _args5 = arguments;
         return _regeneratorRuntime().wrap(function _callee5$(_context5) {
@@ -747,7 +746,7 @@
       return _deleteRequest.apply(this, arguments);
     }
     function _deleteRequest() {
-      _deleteRequest = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6(url, body) {
+      _deleteRequest = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee6(url, body) {
         var headers,
           _args6 = arguments;
         return _regeneratorRuntime().wrap(function _callee6$(_context6) {
@@ -1157,7 +1156,7 @@
           }
         });
       }
-      _createClass(ElementMapping, [{
+      return _createClass(ElementMapping, [{
         key: "element",
         get: function get() {
           return this._proxy;
@@ -1368,7 +1367,6 @@
           return this._proxy;
         }
       }]);
-      return ElementMapping;
     }();
     Dom.ElementMapping = ElementMapping;
   })(exports.Dom || (exports.Dom = {}));
@@ -1512,7 +1510,7 @@
     Loader.dom = {
       contentTypes: ["text/html", "text/xml", "application/xml", "application/xhtml+xml", "image/svg+xml"],
       load: function () {
-        var _load = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(response) {
+        var _load = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(response) {
           var text, contentType, mimeType, match, _match, parser;
           return _regeneratorRuntime().wrap(function _callee$(_context) {
             while (1) switch (_context.prev = _context.next) {
@@ -1547,7 +1545,7 @@
     Loader.bitmap = {
       contentTypes: ["image/avif", "image/bmp", "image/gif", "image/jpeg", "image/png", "image/svg+xml", "image/tiff", "image/webp"],
       load: function load(response) {
-        return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
+        return _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
           return _regeneratorRuntime().wrap(function _callee2$(_context2) {
             while (1) switch (_context2.prev = _context2.next) {
               case 0:
@@ -1571,7 +1569,7 @@
     Loader.json = {
       contentTypes: ["application/json"],
       load: function load(response) {
-        return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
+        return _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
           return _regeneratorRuntime().wrap(function _callee3$(_context3) {
             while (1) switch (_context3.prev = _context3.next) {
               case 0:
@@ -1590,7 +1588,7 @@
     Loader.text = {
       contentTypes: ["text/css", "text/csv", "text/plain"],
       load: function load(response) {
-        return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
+        return _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
           return _regeneratorRuntime().wrap(function _callee4$(_context4) {
             while (1) switch (_context4.prev = _context4.next) {
               case 0:
@@ -1618,7 +1616,7 @@
       this.resourceLoaders = [Loader.bitmap, Loader.dom, Loader.json, Loader.text];
       this._resources = {};
     }
-    _createClass(AssetManager, [{
+    return _createClass(AssetManager, [{
       key: "register",
       value: function register(resourceLoader) {
         this.resourceLoaders.push(resourceLoader);
@@ -1635,7 +1633,7 @@
     }, {
       key: "load",
       value: function () {
-        var _load = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(resourceLoadedCallback) {
+        var _load = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2(resourceLoadedCallback) {
           var _this = this;
           var tasks, _loop;
           return _regeneratorRuntime().wrap(function _callee2$(_context3) {
@@ -1648,8 +1646,8 @@
                     while (1) switch (_context2.prev = _context2.next) {
                       case 0:
                         resourceDescriptor = _this.queue.pop();
-                        tasks.push(new Promise( /*#__PURE__*/function () {
-                          var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(resolve, reject) {
+                        tasks.push(new Promise(/*#__PURE__*/function () {
+                          var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(resolve, reject) {
                             var response, contentType, headerContentType, match, _match, loader, definedContentType, resource;
                             return _regeneratorRuntime().wrap(function _callee$(_context) {
                               while (1) switch (_context.prev = _context.next) {
@@ -1764,7 +1762,6 @@
         return value;
       }
     }]);
-    return AssetManager;
   }();
 
   exports.AssetManager = AssetManager;
