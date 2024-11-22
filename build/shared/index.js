@@ -1957,6 +1957,94 @@
     })(Text.Parse || (Text.Parse = {}));
   })(exports.Text || (exports.Text = {}));
 
+  exports.Typing = void 0;
+  (function (Typing) {
+    function ArrayLiteral() {
+      for (var _len = arguments.length, items = new Array(_len), _key = 0; _key < _len; _key++) {
+        items[_key] = arguments[_key];
+      }
+      return items;
+    }
+    Typing.ArrayLiteral = ArrayLiteral;
+    function Tuple() {
+      for (var _len2 = arguments.length, items = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        items[_key2] = arguments[_key2];
+      }
+      return items;
+    }
+    Typing.Tuple = Tuple;
+    function makeLiteral(value) {
+      return value;
+    }
+    Typing.makeLiteral = makeLiteral;
+    /**
+     * Allows creation of an object that contains strongly typed specific primitive literals.
+     *
+     * @example
+     * ```ts
+     * const person = {
+     *     name: "Jeremy",
+     *     age: 23,
+     *     hair: {
+     *         color: "black",
+     *         bald: false
+     *     }
+     * };
+     * ```
+     *
+     * With the above object definition, TypeScript assumes the type to be:
+     *
+     * ```ts
+     * const person: {
+     *     name: string;
+     *     age: number;
+     *     hair: {
+     *         color: string;
+     *         bald: boolean;
+     *     };
+     * }
+     * ```
+     *
+     * Alternatively,
+     *
+     * ```ts
+     * const verySpecificPerson = FreeCoreToolbox.withLiterals((literal) => ({
+     *     name: literal("Jeremy"),
+     *     age: literal(23),
+     *     hair: {
+     *         color: literal("black"),
+     *         bald: literal(false)
+     *     }
+     * }));
+     * ```
+     *
+     * With the above object definition, TypeScript assumes the type to be:
+     *
+     * ```ts
+     * const verySpecificPerson: {
+     *     name: "Jeremy";
+     *     age: 23;
+     *     hair: {
+     *         color: "black";
+     *         bald: false;
+     *     };
+     * }
+     * ```
+     *
+     * @note This function only matters in a TypeScript context.
+     *
+     * @param builder An object builder callback that returns an object with typed literals.
+     *
+     * @returns An object with specifically selected primitive literals.
+     */
+    function withLiterals(builder) {
+      return builder(function (value) {
+        return value;
+      });
+    }
+    Typing.withLiterals = withLiterals;
+  })(exports.Typing || (exports.Typing = {}));
+
   exports.Clock = Clock;
   exports.Color = Color;
 
