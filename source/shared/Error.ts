@@ -104,7 +104,7 @@ export namespace Error {
                 case 429: return new TooManyRequests(response.statusText);
                 case 431: return new RequestHeaderFieldsTooLarge(response.statusText);
                 case 451: return new UnavailableForLegalReasons(response.statusText);
-                default: new Fatal(`Error ${response.status}. ${response.statusText}`);
+                default: return new Fatal(`Error ${response.status}. ${response.statusText}`);
             }
         }
 
