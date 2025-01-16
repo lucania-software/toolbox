@@ -33,7 +33,7 @@ export declare namespace Error {
         static getFromResponse(response: {
             status: number;
             statusText: string;
-        }): InternalServerError | NotImplemented | BadGateway | ServiceUnavailable | GatewayTimeout | VersionNotSupported | VariantAlsoNegotiates | InsufficientStorage | LoopDetected | NotExtended | NetworkAuthenticationRequired | BadRequest | Unauthorized | PaymentRequired | Forbidden | NotFound | MethodNotAllowed | NotAcceptable | ProxyAuthenticationRequired | RequestTimeout | Conflict | Gone | LengthRequired | PreconditionFailed | PayloadTooLarge | UriTooLong | UnsupportedMediaType | RangeNotSatisfiable | ExpectationFailed | Teapot | MisdirectedRequest | UnprocessableContent | Locked | FailedDependency | TooEarly | UpgradeRequired | PreconditionRequired | TooManyRequests | RequestHeaderFieldsTooLarge | UnavailableForLegalReasons | undefined;
+        }): Fatal | InternalServerError | NotImplemented | BadGateway | ServiceUnavailable | GatewayTimeout | VersionNotSupported | VariantAlsoNegotiates | InsufficientStorage | LoopDetected | NotExtended | NetworkAuthenticationRequired | BadRequest | Unauthorized | PaymentRequired | Forbidden | NotFound | MethodNotAllowed | NotAcceptable | ProxyAuthenticationRequired | RequestTimeout | Conflict | Gone | LengthRequired | PreconditionFailed | PayloadTooLarge | UriTooLong | UnsupportedMediaType | RangeNotSatisfiable | ExpectationFailed | Teapot | MisdirectedRequest | UnprocessableContent | Locked | FailedDependency | TooEarly | UpgradeRequired | PreconditionRequired | TooManyRequests | RequestHeaderFieldsTooLarge | UnavailableForLegalReasons;
     }
     /**
      * For use to indicate the server made a mistake over the HTTP protocol.

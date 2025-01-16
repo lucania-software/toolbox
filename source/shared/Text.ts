@@ -1,3 +1,5 @@
+import { Error } from "./Error";
+
 type TextDefaults = {
     locale: Intl.LocalesArgument,
     dateFormat: Intl.DateTimeFormatOptions,
@@ -140,7 +142,7 @@ export namespace Text {
      */
     export function integerSuffix(value: number): string {
         if (value % 1 !== 0) {
-            throw new Error(`Can only determine a number suffix for integers. Got "${value}".`);
+            throw new Error.Fatal(`Can only determine a number suffix for integers. Got "${value}".`);
         }
         const string = value.toFixed(0);
         if (value === 13) {
@@ -167,7 +169,7 @@ export namespace Text {
             case "iso": return date.toISOString();
             case "form": return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().substring(0, 10);
             case "pretty": return date.toLocaleDateString(Text.defaults.locale, Text.defaults.dateFormat);
-            default: throw new Error(`Unrecognized date format ${format}.`);
+            default: throw new Error.Fatal(`Unrecognized date format ${format}.`);
         }
     }
 
@@ -197,6 +199,24 @@ export namespace Text {
                     hoursOfDayOrDate = new Date(0, 0, 0, hours, minutes);
                 }
                 return hoursOfDayOrDate.toLocaleTimeString(Text.defaults.locale, Text.defaults.timeFormat);
+            default:
+                throw new Error.Fatal(`Unrecognized date format "${format}".`);
+        }
+    }
+
+    /**
+     * Gets the name of the month of the year from {@link date}.
+     * @param date The date to get the month from.
+     * @returns The name of the month of the year.
+     */
+    export function month(date: Date, format: "form" | "pretty" = "pretty") {
+        switch (format) {
+            case "form":
+                return `${date.getFullYear().toString().padStart(4, "0")}-${(date.getMonth() + 1).toString().padStart(2, "0")}`;
+            case "pretty":
+                return date.toLocaleDateString(Text.defaults.locale, { month: "long" })
+            default:
+                throw new Error.Fatal(`Unrecognized date format "${format}".`);
         }
     }
 
@@ -238,15 +258,6 @@ export namespace Text {
      */
     export function weekday(date: Date) {
         return date.toLocaleDateString(Text.defaults.locale, { weekday: "long" });
-    }
-
-    /**
-     * Gets the name of the month of the year from {@link date}.
-     * @param date The date to get the month from.
-     * @returns The name of the month of the year.
-     */
-    export function month(date: Date) {
-        return date.toLocaleDateString(Text.defaults.locale, { month: "long" });
     }
 
     /**
@@ -331,6 +342,21 @@ export namespace Text {
             } else {
                 return date;
             }
+        }
+
+        /**
+         * Converts a month string into a date object.
+         * @note A month string is the format of the value associated with a type="month" HTML input `YYYY-MM`.
+         * @param monthString The string to parse into a date.
+         * @returns The parsed date.
+         */
+        export function month(monthString: string) {
+            const match = monthString.match(/([0-9]{4})-([0-9]{2})/);
+            if (match === null) {
+                return new Date(NaN);
+            }
+            const [_, year, month] = match;
+            return new Date(parseInt(year), parseInt(month) - 1);
         }
 
         /**

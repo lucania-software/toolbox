@@ -817,7 +817,7 @@
             case 451:
               return new UnavailableForLegalReasons(response.statusText);
             default:
-              new Fatal("Error ".concat(response.status, ". ").concat(response.statusText));
+              return new Fatal("Error ".concat(response.status, ". ").concat(response.statusText));
           }
         }
       }]);
@@ -1709,7 +1709,7 @@
      */
     function integerSuffix(value) {
       if (value % 1 !== 0) {
-        throw new Error("Can only determine a number suffix for integers. Got \"".concat(value, "\"."));
+        throw new exports.Error.Fatal("Can only determine a number suffix for integers. Got \"".concat(value, "\"."));
       }
       var string = value.toFixed(0);
       if (value === 13) {
@@ -1745,7 +1745,7 @@
         case "pretty":
           return date.toLocaleDateString(Text.defaults.locale, Text.defaults.dateFormat);
         default:
-          throw new Error("Unrecognized date format ".concat(format, "."));
+          throw new exports.Error.Fatal("Unrecognized date format ".concat(format, "."));
       }
     }
     Text.date = date;
@@ -1776,9 +1776,30 @@
             hoursOfDayOrDate = new Date(0, 0, 0, _hours, _minutes);
           }
           return hoursOfDayOrDate.toLocaleTimeString(Text.defaults.locale, Text.defaults.timeFormat);
+        default:
+          throw new exports.Error.Fatal("Unrecognized date format \"".concat(format, "\"."));
       }
     }
     Text.time = time;
+    /**
+     * Gets the name of the month of the year from {@link date}.
+     * @param date The date to get the month from.
+     * @returns The name of the month of the year.
+     */
+    function month(date) {
+      var format = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "pretty";
+      switch (format) {
+        case "form":
+          return "".concat(date.getFullYear().toString().padStart(4, "0"), "-").concat((date.getMonth() + 1).toString().padStart(2, "0"));
+        case "pretty":
+          return date.toLocaleDateString(Text.defaults.locale, {
+            month: "long"
+          });
+        default:
+          throw new exports.Error.Fatal("Unrecognized date format \"".concat(format, "\"."));
+      }
+    }
+    Text.month = month;
     /**
      * Converts a given duration in milliseconds to a string.
      * @param milliseconds Milliseconds to convert into a duration string.
@@ -1839,17 +1860,6 @@
       });
     }
     Text.weekday = weekday;
-    /**
-     * Gets the name of the month of the year from {@link date}.
-     * @param date The date to get the month from.
-     * @returns The name of the month of the year.
-     */
-    function month(date) {
-      return date.toLocaleDateString(Text.defaults.locale, {
-        month: "long"
-      });
-    }
-    Text.month = month;
     /**
      * Creates a string from {@link currency}.
      * @param currency The currency to convert to a string.
@@ -1943,6 +1953,24 @@
         }
       }
       Parse.date = date;
+      /**
+       * Converts a month string into a date object.
+       * @note A month string is the format of the value associated with a type="month" HTML input `YYYY-MM`.
+       * @param monthString The string to parse into a date.
+       * @returns The parsed date.
+       */
+      function month(monthString) {
+        var match = monthString.match(/([0-9]{4})-([0-9]{2})/);
+        if (match === null) {
+          return new Date(NaN);
+        }
+        var _match = _slicedToArray(match, 3);
+          _match[0];
+          var year = _match[1],
+          month = _match[2];
+        return new Date(parseInt(year), parseInt(month) - 1);
+      }
+      Parse.month = month;
       /**
        * Converts a form time string (HH:mm) to a number of hours of a day.
        * @param formTimeString The string to parse.

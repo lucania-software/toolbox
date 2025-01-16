@@ -81,6 +81,12 @@ export declare namespace Text {
      */
     function time(hoursOfDayOrDate: Date | number, format?: "form" | "pretty"): string;
     /**
+     * Gets the name of the month of the year from {@link date}.
+     * @param date The date to get the month from.
+     * @returns The name of the month of the year.
+     */
+    function month(date: Date, format?: "form" | "pretty"): string;
+    /**
      * Converts a given duration in milliseconds to a string.
      * @param milliseconds Milliseconds to convert into a duration string.
      * @param maximumPrecision The maximum precision of the duration string.
@@ -95,12 +101,6 @@ export declare namespace Text {
      * @returns The name of the day of the week.
      */
     function weekday(date: Date): string;
-    /**
-     * Gets the name of the month of the year from {@link date}.
-     * @param date The date to get the month from.
-     * @returns The name of the month of the year.
-     */
-    function month(date: Date): string;
     /**
      * Creates a string from {@link currency}.
      * @param currency The currency to convert to a string.
@@ -144,6 +144,13 @@ export declare namespace Text {
         * @returns The parsed date.
         */
         function date(dateString: string, formFormat: boolean): Date;
+        /**
+         * Converts a month string into a date object.
+         * @note A month string is the format of the value associated with a type="month" HTML input `YYYY-MM`.
+         * @param monthString The string to parse into a date.
+         * @returns The parsed date.
+         */
+        function month(monthString: string): Date;
         /**
          * Converts a form time string (HH:mm) to a number of hours of a day.
          * @param formTimeString The string to parse.
