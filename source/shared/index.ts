@@ -5,4 +5,5 @@ export * from "./Data";
 export * from "./Error";
 export * from "./RegularExpression";
 export * from "./Text";
+export * from "./TimeZone";
 export * from "./Typing";

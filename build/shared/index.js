@@ -1985,6 +1985,91 @@
     })(Text.Parse || (Text.Parse = {}));
   })(exports.Text || (exports.Text = {}));
 
+  /**
+   * Supplies tooling to aid in working with `Date` objects in different time zones.
+   */
+  exports.TimeZone = void 0;
+  (function (TimeZone) {
+    /**
+     * Gets a time zone offset string given a time zone name.
+     *
+     * I.E. GMT-04:00
+     *
+     * @param timeZoneName An IANA time zone name (I.E. America/Halifax)
+     */
+    function getTimeZoneString(timeZoneName) {
+      var timeZoneFormat = new Intl.DateTimeFormat("en-US", {
+        timeZoneName: "longOffset",
+        timeZone: timeZoneName
+      });
+      var formattedParts = timeZoneFormat.formatToParts(0);
+      var timeZoneOffsetPart = formattedParts.find(function (part) {
+        return part.type === "timeZoneName";
+      });
+      exports.Data.assert(timeZoneOffsetPart !== undefined, "Failed to find time zone offset part while getting offset of \"".concat(timeZoneName, "\"."));
+      return timeZoneOffsetPart.value;
+    }
+    TimeZone.getTimeZoneString = getTimeZoneString;
+    /**
+     * Gets a time zone offset string given a time zone name.
+     *
+     * I.E. GMT-04:00
+     *
+     * @param timeZoneName An IANA time zone name (I.E. America/Halifax).
+     * @returns
+     */
+    function getTimeZoneOffset(timeZoneName) {
+      var timeZoneString = getTimeZoneString(timeZoneName);
+      var timeZoneMatcher = timeZoneString.match(/([A-Z]{3})([+-])([0-9]{2}):([0-9]{2})/);
+      exports.Data.assert(timeZoneMatcher !== null, "Time zone offset part \"".concat(timeZoneString, "\" did not match expected format while getting offset of \"").concat(timeZoneName, "\"."));
+      var _timeZoneMatcher = _slicedToArray(timeZoneMatcher, 5);
+        _timeZoneMatcher[0];
+        var offsetFrom = _timeZoneMatcher[1],
+        direction = _timeZoneMatcher[2],
+        hour = _timeZoneMatcher[3],
+        minute = _timeZoneMatcher[4];
+      var sign = direction === "+" ? -1 : 1;
+      exports.Data.assert(offsetFrom === "GMT", "Expected time zone string to be offset from GMT, but got \"".concat(offsetFrom, "\"."));
+      return sign * (parseInt(hour) + parseInt(minute) / 60);
+    }
+    TimeZone.getTimeZoneOffset = getTimeZoneOffset;
+    /**
+     * Creates a date object where `source`'s values are interpreted as describing the time in a given `timeZone`.
+     *
+     * @param source Source used to create a Date object.
+     * @param timeZone An IANA time zone name (I.E. America/Halifax).
+     * @returns A date object representing an instant in time where `source`'s values would match that of a clock in `timeZone`.
+     */
+    function createDate(source, timeZone) {
+      var date = new Date(Date.UTC.apply(Date, _toConsumableArray(Object.values(source))));
+      date.setHours(date.getHours() + getTimeZoneOffset(timeZone));
+      return date;
+    }
+    TimeZone.createDate = createDate;
+    /**
+     * Creates a date object where `formDateString` is parsed as a date in the supplied `timeZone`.
+     *
+     * @param formDateString A date string in the form format.
+     * @param timeZone An IANA time zone name (I.E. America/Halifax).
+     * @returns A date object representing an instant in time where `formDateString` would match that of a clock in `timeZone`.
+     */
+    function createDateFromFormString(formDateString, timeZone) {
+      var formDateStringMatcher = formDateString.match(/([0-9]{4})-([0-9]{2})-([0-9]{2})/);
+      exports.Data.assert(formDateStringMatcher !== null, "Unexpected form date format \"".concat(formDateString, "\"."));
+      var _formDateStringMatche = _slicedToArray(formDateStringMatcher, 4);
+        _formDateStringMatche[0];
+        var year = _formDateStringMatche[1],
+        month = _formDateStringMatche[2],
+        date = _formDateStringMatche[3];
+      return createDate({
+        year: parseInt(year),
+        monthIndex: parseInt(month) - 1,
+        date: parseInt(date)
+      }, timeZone);
+    }
+    TimeZone.createDateFromFormString = createDateFromFormString;
+  })(exports.TimeZone || (exports.TimeZone = {}));
+
   exports.Typing = void 0;
   (function (Typing) {
     function ArrayLiteral() {
