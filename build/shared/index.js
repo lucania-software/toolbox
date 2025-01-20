@@ -240,414 +240,6 @@
     return typeof key === "symbol" ? key : String(key);
   }
 
-  var Clock = /*#__PURE__*/function () {
-    function Clock() {
-      _classCallCheck(this, Clock);
-      _defineProperty(this, "_creationTime", void 0);
-      _defineProperty(this, "_lastTimeCheck", void 0);
-      _defineProperty(this, "_timers", void 0);
-      this._creationTime = this.now;
-      this._lastTimeCheck = this._creationTime;
-      this._timers = {};
-    }
-    return _createClass(Clock, [{
-      key: "now",
-      get: function get() {
-        return performance.now() / 1000;
-      }
-    }, {
-      key: "deltaTime",
-      get: function get() {
-        var deltaTime = this.now - this._lastTimeCheck;
-        this._lastTimeCheck = this.now;
-        return deltaTime;
-      }
-    }, {
-      key: "age",
-      get: function get() {
-        return this.now - this._creationTime;
-      }
-      /**
-       * Creates a timer that can be queried for completion with {@link hasTimerElapsed}.
-       * @param label The identifier for this timer.
-       * @param duration The duration of the timer in seconds.
-       * @param callback An optional callback to execute when the timer completes.
-       */
-    }, {
-      key: "createTimer",
-      value: function createTimer(label, duration, callback) {
-        this._timers[label] = {
-          duration: duration,
-          lastTriggerTime: this.now
-        };
-        if (callback !== undefined) {
-          setTimeout(function () {
-            return callback(label, duration);
-          }, duration);
-        }
-      }
-    }, {
-      key: "removeTimer",
-      value: function removeTimer(label) {
-        delete this._timers[label];
-      }
-    }, {
-      key: "hasTimerElapsed",
-      value: function hasTimerElapsed(label) {
-        if (label in this._timers) {
-          var timer = this._timers[label];
-          if (this.now - timer.lastTriggerTime > timer.duration) {
-            timer.lastTriggerTime = this.now;
-            return true;
-          }
-          return false;
-        } else {
-          throw new Error("No timer exists with label ".concat(label, ". Make sure to create one first with Clock.createTimer()."));
-        }
-      }
-    }]);
-  }();
-
-  var _Color;
-  var Color = /*#__PURE__*/function () {
-    function Color(hex) {
-      _classCallCheck(this, Color);
-      _defineProperty(this, "_hex", void 0);
-      _defineProperty(this, "_rgba", void 0);
-      this._hex = hex;
-      this._rgba = Color._getRgba(hex);
-    }
-    /**
-     * Gets this color's RGBA value as a tuple, on a scale from 0 to 255.
-     */
-    return _createClass(Color, [{
-      key: "rgba",
-      get: function get() {
-        return this._rgba;
-      }
-      /**
-       * Gets this color's RGBA value as a tuple, on a scale from 0 to 1.
-       */
-    }, {
-      key: "normalizedRgba",
-      get: function get() {
-        return [this.normalizedRed, this.normalizedGreen, this.normalizedBlue, this.normalizedAlpha];
-      }
-    }, {
-      key: "cielab",
-      get:
-      /**
-       * Gets this color's CIELAB value as a tuple.
-       * https://en.wikipedia.org/wiki/CIELAB_color_space
-       */
-      function get() {
-        var _this$normalizedRgba = _slicedToArray(this.normalizedRgba, 3),
-          red = _this$normalizedRgba[0],
-          green = _this$normalizedRgba[1],
-          blue = _this$normalizedRgba[2];
-        red = red > 0.04045 ? Math.pow((red + 0.055) / 1.055, 2.4) : red / 12.92;
-        green = green > 0.04045 ? Math.pow((green + 0.055) / 1.055, 2.4) : green / 12.92;
-        blue = blue > 0.04045 ? Math.pow((blue + 0.055) / 1.055, 2.4) : blue / 12.92;
-        var x = (red * 0.4124 + green * 0.3576 + blue * 0.1805) / 0.95047;
-        var y = (red * 0.2126 + green * 0.7152 + blue * 0.0722) / 1.00000;
-        var z = (red * 0.0193 + green * 0.1192 + blue * 0.9505) / 1.08883;
-        x = x > 0.008856 ? Math.pow(x, 1 / 3) : 7.787 * x + 16 / 116;
-        y = y > 0.008856 ? Math.pow(y, 1 / 3) : 7.787 * y + 16 / 116;
-        z = z > 0.008856 ? Math.pow(z, 1 / 3) : 7.787 * z + 16 / 116;
-        return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
-      }
-      /**
-       * Gets this color's hex value, including alpha channel (i.e. 0xFF00FFFF)
-       */
-    }, {
-      key: "hex",
-      get: function get() {
-        return Number(this._hex);
-      }
-      /**
-       * Sets this color's hex value, including alpha channel (i.e. 0xFF00FFFF)
-       */,
-      set: function set(value) {
-        this._hex = BigInt(value);
-        this._rgba = Color._getRgba(this._hex);
-      }
-      /**
-       * Gets this color's hsl (Hue, Saturation, Lightness) value, excluding the alpha channel.
-       * @note The hue value is in the range from 0 to 360 degrees.
-       * @note The saturation value is in the range of 0 to 100.
-       * @note the lightness value is in the range of 0 to 100.
-       */
-    }, {
-      key: "hsl",
-      get: function get() {
-        return Color.getHsl(this);
-      }
-      /**
-       * The red channel of this color, on a scale from 0 to 255
-       */
-    }, {
-      key: "red",
-      get: function get() {
-        return this.rgba[0];
-      }
-      /**
-       * The green channel of this color, on a scale from 0 to 255
-       */
-    }, {
-      key: "green",
-      get: function get() {
-        return this.rgba[1];
-      }
-      /**
-       * The blue channel of this color, on a scale from 0 to 255
-       */
-    }, {
-      key: "blue",
-      get: function get() {
-        return this.rgba[2];
-      }
-      /**
-       * The alpha channel of this color, on a scale from 0 to 255
-       */
-    }, {
-      key: "alpha",
-      get: function get() {
-        return this.rgba[3];
-      }
-      /**
-       * The red channel of this color, on a scale from 0 to 1
-       */
-    }, {
-      key: "normalizedRed",
-      get: function get() {
-        return this.red / 255;
-      }
-      /**
-       * The green channel of this color, on a scale from 0 to 1
-       */
-    }, {
-      key: "normalizedGreen",
-      get: function get() {
-        return this.green / 255;
-      }
-      /**
-       * The blue channel of this color, on a scale from 0 to 1
-       */
-    }, {
-      key: "normalizedBlue",
-      get: function get() {
-        return this.blue / 255;
-      }
-      /**
-       * The alpha channel of this color, on a scale from 0 to 1
-       */
-    }, {
-      key: "normalizedAlpha",
-      get: function get() {
-        return this.alpha / 255;
-      }
-    }, {
-      key: "clone",
-      value: function clone() {
-        return new Color(this._hex);
-      }
-    }, {
-      key: "equals",
-      value: function equals(color) {
-        return color instanceof Color && color._hex === this._hex;
-      }
-      /**
-       * Mixes two colors together.
-       * @param source The source of the color to mix.
-       * @param weight The normalized weight from 0 to 1 of the mixture. 0 will result in all this color, 1 will result in all of the color defined by "source". Defaults to 0.5.
-       */
-    }, {
-      key: "mix",
-      value: function mix(source) {
-        var weight = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0.5;
-        var color = Color.from(source);
-        this._rgba = [this.red + (color.red - this.red) * weight, this.green + (color.green - this.green) * weight, this.blue + (color.blue - this.blue) * weight, this.alpha + (color.alpha - this.alpha) * weight];
-      }
-    }, {
-      key: "chooseFromPalette",
-      value: function chooseFromPalette(palette) {
-        var _this = this;
-        var _palette = _slicedToArray(palette, 1),
-          color = _palette[0];
-        var result = palette.reduce(function (accumulator, color) {
-          var delta = Color.getCielabDelta(_this, color);
-          return accumulator.delta === undefined || delta < accumulator.delta ? {
-            color: color,
-            delta: delta
-          } : accumulator;
-        }, {
-          color: color
-        });
-        return result.color;
-      }
-    }, {
-      key: "toString",
-      value: function toString() {
-        return "[(r: ".concat(this.red, ", g: ").concat(this.green, ", b: ").concat(this.blue, "), (#").concat(this.hex.toString(16).padStart(8, "0"), ")]");
-      }
-    }], [{
-      key: "getRgba",
-      value: function getRgba(color) {
-        return Color.from(color).rgba;
-      }
-    }, {
-      key: "getHex",
-      value: function getHex(color) {
-        return Color.from(color).hex;
-      }
-    }, {
-      key: "getNormalizedRgba",
-      value: function getNormalizedRgba(color) {
-        return Color.from(color).normalizedRgba;
-      }
-    }, {
-      key: "getHsl",
-      value: function getHsl(color) {
-        var _Color$getNormalizedR = Color.getNormalizedRgba(color),
-          _Color$getNormalizedR2 = _slicedToArray(_Color$getNormalizedR, 3),
-          red = _Color$getNormalizedR2[0],
-          green = _Color$getNormalizedR2[1],
-          blue = _Color$getNormalizedR2[2];
-        var lightness = Math.max(red, green, blue);
-        var saturation = lightness - Math.min(red, green, blue);
-        var hue = saturation ? lightness === red ? (green - blue) / saturation : lightness === green ? 2 + (blue - red) / saturation : 4 + (red - green) / saturation : 0;
-        return [60 * hue < 0 ? 60 * hue + 360 : 60 * hue, 100 * (saturation ? lightness <= 0.5 ? saturation / (2 * lightness - saturation) : saturation / (2 - (2 * lightness - saturation)) : 0), 100 * (2 * lightness - saturation) / 2];
-      }
-      /**
-       * Gets the difference between two colors via Cielab ΔE*.
-       * https://en.wikipedia.org/wiki/Color_difference#CIELAB_%CE%94E*
-       *
-       * @param colorA
-       * @param colorB
-       * @returns
-       */
-    }, {
-      key: "getCielabDelta",
-      value: function getCielabDelta(colorA, colorB) {
-        colorA = Color.from(colorA);
-        colorB = Color.from(colorB);
-        var labA = colorA.cielab;
-        var labB = colorB.cielab;
-        var deltaL = labA[0] - labB[0];
-        var deltaA = labA[1] - labB[1];
-        var deltaB = labA[2] - labB[2];
-        var c1 = Math.sqrt(labA[1] * labA[1] + labA[2] * labA[2]);
-        var c2 = Math.sqrt(labB[1] * labB[1] + labB[2] * labB[2]);
-        var deltaC = c1 - c2;
-        var deltaH = deltaA * deltaA + deltaB * deltaB - deltaC * deltaC;
-        deltaH = deltaH < 0 ? 0 : Math.sqrt(deltaH);
-        var sc = 1.0 + 0.045 * c1;
-        var sh = 1.0 + 0.015 * c1;
-        var deltaLKlsl = deltaL / 1.0;
-        var deltaCkcsc = deltaC / sc;
-        var deltaHkhsh = deltaH / sh;
-        var i = deltaLKlsl * deltaLKlsl + deltaCkcsc * deltaCkcsc + deltaHkhsh * deltaHkhsh;
-        return i < 0 ? 0 : Math.sqrt(i);
-      }
-    }, {
-      key: "_getHex",
-      value: function _getHex(rgba) {
-        return BigInt(rgba[0]) << 8n * 3n | BigInt(rgba[1]) << 8n * 2n | BigInt(rgba[2]) << 8n * 1n | BigInt(rgba[3]) << 8n * 0n;
-      }
-    }, {
-      key: "_getRgba",
-      value: function _getRgba(hex) {
-        return [Number(hex >> 8n * 3n & 0xffn), Number(hex >> 8n * 2n & 0xffn), Number(hex >> 8n * 1n & 0xffn), Number(hex >> 8n * 0n & 0xffn)];
-      }
-    }, {
-      key: "from",
-      value: function from(source) {
-        if (source instanceof Color) {
-          return source.clone();
-        } else if (typeof source === "number") {
-          return new Color(BigInt(source));
-        } else {
-          return new Color(Color._getHex(source));
-        }
-      }
-    }]);
-  }();
-  _Color = Color;
-  _defineProperty(Color, "BLACK", _Color.from(0x000000FF));
-  _defineProperty(Color, "WHITE", _Color.from(0xFFFFFFFF));
-  _defineProperty(Color, "GRAY", _Color.from(0x808080FF));
-  _defineProperty(Color, "RED", _Color.from(0xFF0000FF));
-  _defineProperty(Color, "GREEN", _Color.from(0x00FF00FF));
-  _defineProperty(Color, "BLUE", _Color.from(0x0000FFFF));
-  _defineProperty(Color, "CYAN", _Color.from(0x00FFFFFF));
-  _defineProperty(Color, "MAGENTA", _Color.from(0xFF00FFFF));
-  _defineProperty(Color, "YELLOW", _Color.from(0xFFFF00FF));
-
-  /**
-   * Used for printing to the console in Color! :D
-   */
-  exports.ConsoleColor = void 0;
-  (function (ConsoleColor) {
-    /**
-     * Special formatting codes.
-     */
-    var Special;
-    (function (Special) {
-      Special.reset = "\x1b[0m";
-      Special.bright = "\x1b[1m";
-      Special.dim = "\x1b[2m";
-      Special.underscore = "\x1b[4m";
-      Special.blink = "\x1b[5m";
-      Special.reverse = "\x1b[7m";
-      Special.hidden = "\x1b[8m";
-    })(Special = ConsoleColor.Special || (ConsoleColor.Special = {}));
-    /**
-     * Foreground color codes.
-     */
-    var Fore;
-    (function (Fore) {
-      Fore.black = "\x1b[30m";
-      Fore.red = "\x1b[31m";
-      Fore.green = "\x1b[32m";
-      Fore.yellow = "\x1b[33m";
-      Fore.blue = "\x1b[34m";
-      Fore.magenta = "\x1b[35m";
-      Fore.cyan = "\x1b[36m";
-      Fore.white = "\x1b[37m";
-      Fore.gray = "\x1b[90m";
-    })(Fore = ConsoleColor.Fore || (ConsoleColor.Fore = {}));
-    (function (Back) {
-      Back.black = "\x1b[40m";
-      Back.red = "\x1b[41m";
-      Back.green = "\x1b[42m";
-      Back.yellow = "\x1b[43m";
-      Back.blue = "\x1b[44m";
-      Back.magenta = "\x1b[45m";
-      Back.cyan = "\x1b[46m";
-      Back.white = "\x1b[47m";
-      Back.gray = "\x1b[100m";
-    })(ConsoleColor.Back || (ConsoleColor.Back = {}));
-    /**
-     * A combination of Foreground and Special formatting codes so you don't have to destructure both.
-     *
-     * `E.G.`
-     *
-     * ```typescript
-     * const { red, reset } = ConsoleColor.Common;
-     * console.log(`I like the color ${red}red${reset}.`);
-     * ```
-     */
-    ConsoleColor.Common = _objectSpread2(_objectSpread2({}, Fore), Special);
-    function closest(color) {
-      var closestColor = Color.from(color).chooseFromPalette(ConsoleColor.SupportedColors);
-      return "\x1B[38;5;".concat(ConsoleColor.SupportedColors.indexOf(closestColor), "m");
-    }
-    ConsoleColor.closest = closest;
-    ConsoleColor.SupportedColors = [0X000000FF, 0XCD3131FF, 0X0DBC79FF, 0XE5E510FF, 0X2472C8FF, 0XBC3FBCFF, 0X11A8CDFF, 0XE5E5E5FF, 0X666666FF, 0XF14C4CFF, 0X23D18BFF, 0XF5F543FF, 0X3B8EEAFF, 0XD670D6FF, 0X29B8DBFF, 0XE5E5E5FF, 0X000000FF, 0X00005FFF, 0X000087FF, 0X0000AFFF, 0X0000D7FF, 0X0000FFFF, 0X005F00FF, 0X005F5FFF, 0X005F87FF, 0X005FAFFF, 0X005FD7FF, 0X005FFFFF, 0X008700FF, 0X00875FFF, 0X008787FF, 0X0087AFFF, 0X0087D7FF, 0X0087FFFF, 0X00AF00FF, 0X00AF5FFF, 0X00AF87FF, 0X00AFAFFF, 0X00AFD7FF, 0X00AFFFFF, 0X00D700FF, 0X00D75FFF, 0X00D787FF, 0X00D7AFFF, 0X00D7D7FF, 0X00D7FFFF, 0X00FF00FF, 0X00FF5FFF, 0X00FF87FF, 0X00FFAFFF, 0X00FFD7FF, 0X00FFFFFF, 0X5F0000FF, 0X5F005FFF, 0X5F0087FF, 0X5F00AFFF, 0X5F00D7FF, 0X5F00FFFF, 0X5F5F00FF, 0X5F5F5FFF, 0X5F5F87FF, 0X5F5FAFFF, 0X5F5FD7FF, 0X5F5FFFFF, 0X5F8700FF, 0X5F875FFF, 0X5F8787FF, 0X5F87AFFF, 0X5F87D7FF, 0X5F87FFFF, 0X5FAF00FF, 0X5FAF5FFF, 0X5FAF87FF, 0X5FAFAFFF, 0X5FAFD7FF, 0X5FAFFFFF, 0X5FD700FF, 0X5FD75FFF, 0X5FD787FF, 0X5FD7AFFF, 0X5FD7D7FF, 0X5FD7FFFF, 0X5FFF00FF, 0X5FFF5FFF, 0X5FFF87FF, 0X5FFFAFFF, 0X5FFFD7FF, 0X5FFFFFFF, 0X870000FF, 0X87005FFF, 0X870087FF, 0X8700AFFF, 0X8700D7FF, 0X8700FFFF, 0X875F00FF, 0X875F5FFF, 0X875F87FF, 0X875FAFFF, 0X875FD7FF, 0X875FFFFF, 0X878700FF, 0X87875FFF, 0X878787FF, 0X8787AFFF, 0X8787D7FF, 0X8787FFFF, 0X87AF00FF, 0X87AF5FFF, 0X87AF87FF, 0X87AFAFFF, 0X87AFD7FF, 0X87AFFFFF, 0X87D700FF, 0X87D75FFF, 0X87D787FF, 0X87D7AFFF, 0X87D7D7FF, 0X87D7FFFF, 0X87FF00FF, 0X87FF5FFF, 0X87FF87FF, 0X87FFAFFF, 0X87FFD7FF, 0X87FFFFFF, 0XAF0000FF, 0XAF005FFF, 0XAF0087FF, 0XAF00AFFF, 0XAF00D7FF, 0XAF00FFFF, 0XAF5F00FF, 0XAF5F5FFF, 0XAF5F87FF, 0XAF5FAFFF, 0XAF5FD7FF, 0XAF5FFFFF, 0XAF8700FF, 0XAF875FFF, 0XAF8787FF, 0XAF87AFFF, 0XAF87D7FF, 0XAF87FFFF, 0XAFAF00FF, 0XAFAF5FFF, 0XAFAF87FF, 0XAFAFAFFF, 0XAFAFD7FF, 0XAFAFFFFF, 0XAFD700FF, 0XAFD75FFF, 0XAFD787FF, 0XAFD7AFFF, 0XAFD7D7FF, 0XAFD7FFFF, 0XAFFF00FF, 0XAFFF5FFF, 0XAFFF87FF, 0XAFFFAFFF, 0XAFFFD7FF, 0XAFFFFFFF, 0XD70000FF, 0XD7005FFF, 0XD70087FF, 0XD700AFFF, 0XD700D7FF, 0XD700FFFF, 0XD75F00FF, 0XD75F5FFF, 0XD75F87FF, 0XD75FAFFF, 0XD75FD7FF, 0XD75FFFFF, 0XD78700FF, 0XD7875FFF, 0XD78787FF, 0XD787AFFF, 0XD787D7FF, 0XD787FFFF, 0XD7AF00FF, 0XD7AF5FFF, 0XD7AF87FF, 0XD7AFAFFF, 0XD7AFD7FF, 0XD7AFFFFF, 0XD7D700FF, 0XD7D75FFF, 0XD7D787FF, 0XD7D7AFFF, 0XD7D7D7FF, 0XD7D7FFFF, 0XD7FF00FF, 0XD7FF5FFF, 0XD7FF87FF, 0XD7FFAFFF, 0XD7FFD7FF, 0XD7FFFFFF, 0XFF0000FF, 0XFF005FFF, 0XFF0087FF, 0XFF00AFFF, 0XFF00D7FF, 0XFF00FFFF, 0XFF5F00FF, 0XFF5F5FFF, 0XFF5F87FF, 0XFF5FAFFF, 0XFF5FD7FF, 0XFF5FFFFF, 0XFF8700FF, 0XFF875FFF, 0XFF8787FF, 0XFF87AFFF, 0XFF87D7FF, 0XFF87FFFF, 0XFFAF00FF, 0XFFAF5FFF, 0XFFAF87FF, 0XFFAFAFFF, 0XFFAFD7FF, 0XFFAFFFFF, 0XFFD700FF, 0XFFD75FFF, 0XFFD787FF, 0XFFD7AFFF, 0XFFD7D7FF, 0XFFD7FFFF, 0XFFFF00FF, 0XFFFF5FFF, 0XFFFF87FF, 0XFFFFAFFF, 0XFFFFD7FF, 0XFFFFFFFF, 0X080808FF, 0X121212FF, 0X1C1C1CFF, 0X262626FF, 0X303030FF, 0X3A3A3AFF, 0X444444FF, 0X4E4E4EFF, 0X585858FF, 0X626262FF, 0X6C6C6CFF, 0X767676FF, 0X808080FF, 0X8A8A8AFF, 0X949494FF, 0X9E9E9EFF, 0XA8A8A8FF, 0XB2B2B2FF, 0XBCBCBCFF, 0XC6C6C6FF, 0XD0D0D0FF, 0XDADADAFF, 0XE4E4E4FF, 0XEEEEEEFF].map(function (hex) {
-      return Color.from(hex);
-    });
-  })(exports.ConsoleColor || (exports.ConsoleColor = {}));
-
   function _callSuper(_this, derived, args) {
     function isNativeReflectConstruct() {
       if (typeof Reflect === "undefined" || !Reflect.construct) return false;
@@ -1537,6 +1129,566 @@
     Data.assert = assert;
   })(exports.Data || (exports.Data = {}));
 
+  /**
+   * Supplies tooling to aid in working with `Date` objects in different time zones.
+   */
+  exports.TimeZone = void 0;
+  (function (TimeZone) {
+    /**
+     * Gets a parsed date representing a snapshot of parts of Date & Time in a given time zone.
+     *
+     * @note The returned `ParsedDate` can be thought of as the numbers someone in the time zone
+     * specified by `timeZoneName` would see on their clock.
+     *
+     * @param date A date to parse into parts for a certain time zone.
+     * @param timeZoneName The time zone in which the parsed parts represent.
+     */
+    function parse(date, timeZoneName) {
+      var formatter = new Intl.DateTimeFormat("en-US", {
+        hour12: false,
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        timeZoneName: "longOffset",
+        timeZone: timeZoneName
+      });
+      return formatter.formatToParts(date).reduce(function (parsed, part) {
+        switch (part.type) {
+          case "year":
+            parsed.year = parseInt(part.value);
+            break;
+          case "month":
+            parsed.month = parseInt(part.value);
+            break;
+          case "day":
+            parsed.date = parseInt(part.value);
+            break;
+          case "hour":
+            parsed.hour = parseInt(part.value);
+            break;
+          case "minute":
+            parsed.minute = parseInt(part.value);
+            break;
+          case "second":
+            parsed.second = parseInt(part.value);
+            break;
+          case "timeZoneName":
+            parsed.timeZoneName = part.value;
+            parsed.timeZoneOffset = parseTimeZoneOffset(part.value);
+            break;
+        }
+        return parsed;
+      }, {
+        year: 0,
+        month: 0,
+        date: 0,
+        hour: 0,
+        minute: 0,
+        second: 0,
+        timeZoneOffset: 0,
+        timeZoneName: ""
+      });
+    }
+    TimeZone.parse = parse;
+    /**
+     * Gets a time zone offset string given a time zone name.
+     *
+     * I.E. GMT-04:00
+     *
+     * @param timeZoneName An IANA time zone name (I.E. America/Halifax)
+     */
+    function getTimeZoneString(timeZoneName) {
+      var timeZoneFormat = new Intl.DateTimeFormat("en-US", {
+        timeZoneName: "longOffset",
+        timeZone: timeZoneName
+      });
+      var formattedParts = timeZoneFormat.formatToParts(0);
+      var timeZoneOffsetPart = formattedParts.find(function (part) {
+        return part.type === "timeZoneName";
+      });
+      exports.Data.assert(timeZoneOffsetPart !== undefined, "Failed to find time zone offset part while getting offset of \"".concat(timeZoneName, "\"."));
+      return timeZoneOffsetPart.value;
+    }
+    TimeZone.getTimeZoneString = getTimeZoneString;
+    /**
+     * Gets a time zone offset string given a time zone name.
+     *
+     * @param timeZoneName An IANA time zone name (I.E. America/Halifax).
+     * @returns
+     */
+    function getTimeZoneOffset(timeZoneName) {
+      var timeZoneString = getTimeZoneString(timeZoneName);
+      return parseTimeZoneOffset(timeZoneString);
+    }
+    TimeZone.getTimeZoneOffset = getTimeZoneOffset;
+    /**
+     * Parses a time zone offset string into a number.
+     *
+     * @param timeZoneOffset A time zone string returned from "getTimeZoneOffset". I.E. GMT-04:00
+     * @return A time zone offset number in hours. I.E. "GMT-04:00" -> 4.0, "GMT+03:00" -> -3.0
+     */
+    function parseTimeZoneOffset(timeZoneOffset) {
+      var timeZoneMatcher = timeZoneOffset.match(/([A-Z]{3})([+-])([0-9]{2}):([0-9]{2})/);
+      exports.Data.assert(timeZoneMatcher !== null, "Time zone offset part \"".concat(timeZoneOffset, "\" did not match expected format."));
+      var _timeZoneMatcher = _slicedToArray(timeZoneMatcher, 5);
+        _timeZoneMatcher[0];
+        var offsetFrom = _timeZoneMatcher[1],
+        direction = _timeZoneMatcher[2],
+        hour = _timeZoneMatcher[3],
+        minute = _timeZoneMatcher[4];
+      var sign = direction === "+" ? -1 : 1;
+      exports.Data.assert(offsetFrom === "GMT", "Expected time zone string to be offset from GMT, but got \"".concat(offsetFrom, "\"."));
+      return sign * (parseInt(hour) + parseInt(minute) / 60);
+    }
+    TimeZone.parseTimeZoneOffset = parseTimeZoneOffset;
+    /**
+     * Creates a date object where `source`'s values are interpreted as describing the time in a given `timeZone`.
+     *
+     * @param source Source used to create a Date object.
+     * @param timeZone An IANA time zone name (I.E. America/Halifax).
+     * @returns A date object representing an instant in time where `source`'s values would match that of a clock in `timeZone`.
+     */
+    function createDate(source, timeZone) {
+      var date = new Date(Date.UTC.apply(Date, _toConsumableArray(Object.values(source))));
+      date.setHours(date.getHours() + getTimeZoneOffset(timeZone));
+      return date;
+    }
+    TimeZone.createDate = createDate;
+    /**
+     * Creates a date object where `formDateString` is parsed as a date in the supplied `timeZone`.
+     *
+     * @param formDateString A date string in the form format.
+     * @param timeZone An IANA time zone name (I.E. America/Halifax).
+     * @returns A date object representing an instant in time where `formDateString` would match that of a clock in `timeZone`.
+     */
+    function createDateFromFormString(formDateString, timeZone) {
+      var formDateStringMatcher = formDateString.match(/([0-9]{4})-([0-9]{2})-([0-9]{2})/);
+      exports.Data.assert(formDateStringMatcher !== null, "Unexpected form date format \"".concat(formDateString, "\"."));
+      var _formDateStringMatche = _slicedToArray(formDateStringMatcher, 4);
+        _formDateStringMatche[0];
+        var year = _formDateStringMatche[1],
+        month = _formDateStringMatche[2],
+        date = _formDateStringMatche[3];
+      return createDate({
+        year: parseInt(year),
+        monthIndex: parseInt(month) - 1,
+        date: parseInt(date)
+      }, timeZone);
+    }
+    TimeZone.createDateFromFormString = createDateFromFormString;
+  })(exports.TimeZone || (exports.TimeZone = {}));
+
+  var Clock = /*#__PURE__*/function () {
+    function Clock() {
+      _classCallCheck(this, Clock);
+      _defineProperty(this, "_creationTime", void 0);
+      _defineProperty(this, "_lastTimeCheck", void 0);
+      _defineProperty(this, "_timers", void 0);
+      this._creationTime = this.now;
+      this._lastTimeCheck = this._creationTime;
+      this._timers = {};
+    }
+    return _createClass(Clock, [{
+      key: "now",
+      get: function get() {
+        return performance.now() / 1000;
+      }
+    }, {
+      key: "deltaTime",
+      get: function get() {
+        var deltaTime = this.now - this._lastTimeCheck;
+        this._lastTimeCheck = this.now;
+        return deltaTime;
+      }
+    }, {
+      key: "age",
+      get: function get() {
+        return this.now - this._creationTime;
+      }
+      /**
+       * Creates a timer that can be queried for completion with {@link hasTimerElapsed}.
+       * @param label The identifier for this timer.
+       * @param duration The duration of the timer in seconds.
+       * @param callback An optional callback to execute when the timer completes.
+       */
+    }, {
+      key: "createTimer",
+      value: function createTimer(label, duration, callback) {
+        this._timers[label] = {
+          duration: duration,
+          lastTriggerTime: this.now
+        };
+        if (callback !== undefined) {
+          setTimeout(function () {
+            return callback(label, duration);
+          }, duration);
+        }
+      }
+    }, {
+      key: "removeTimer",
+      value: function removeTimer(label) {
+        delete this._timers[label];
+      }
+    }, {
+      key: "hasTimerElapsed",
+      value: function hasTimerElapsed(label) {
+        if (label in this._timers) {
+          var timer = this._timers[label];
+          if (this.now - timer.lastTriggerTime > timer.duration) {
+            timer.lastTriggerTime = this.now;
+            return true;
+          }
+          return false;
+        } else {
+          throw new Error("No timer exists with label ".concat(label, ". Make sure to create one first with Clock.createTimer()."));
+        }
+      }
+    }]);
+  }();
+
+  var _Color;
+  var Color = /*#__PURE__*/function () {
+    function Color(hex) {
+      _classCallCheck(this, Color);
+      _defineProperty(this, "_hex", void 0);
+      _defineProperty(this, "_rgba", void 0);
+      this._hex = hex;
+      this._rgba = Color._getRgba(hex);
+    }
+    /**
+     * Gets this color's RGBA value as a tuple, on a scale from 0 to 255.
+     */
+    return _createClass(Color, [{
+      key: "rgba",
+      get: function get() {
+        return this._rgba;
+      }
+      /**
+       * Gets this color's RGBA value as a tuple, on a scale from 0 to 1.
+       */
+    }, {
+      key: "normalizedRgba",
+      get: function get() {
+        return [this.normalizedRed, this.normalizedGreen, this.normalizedBlue, this.normalizedAlpha];
+      }
+    }, {
+      key: "cielab",
+      get:
+      /**
+       * Gets this color's CIELAB value as a tuple.
+       * https://en.wikipedia.org/wiki/CIELAB_color_space
+       */
+      function get() {
+        var _this$normalizedRgba = _slicedToArray(this.normalizedRgba, 3),
+          red = _this$normalizedRgba[0],
+          green = _this$normalizedRgba[1],
+          blue = _this$normalizedRgba[2];
+        red = red > 0.04045 ? Math.pow((red + 0.055) / 1.055, 2.4) : red / 12.92;
+        green = green > 0.04045 ? Math.pow((green + 0.055) / 1.055, 2.4) : green / 12.92;
+        blue = blue > 0.04045 ? Math.pow((blue + 0.055) / 1.055, 2.4) : blue / 12.92;
+        var x = (red * 0.4124 + green * 0.3576 + blue * 0.1805) / 0.95047;
+        var y = (red * 0.2126 + green * 0.7152 + blue * 0.0722) / 1.00000;
+        var z = (red * 0.0193 + green * 0.1192 + blue * 0.9505) / 1.08883;
+        x = x > 0.008856 ? Math.pow(x, 1 / 3) : 7.787 * x + 16 / 116;
+        y = y > 0.008856 ? Math.pow(y, 1 / 3) : 7.787 * y + 16 / 116;
+        z = z > 0.008856 ? Math.pow(z, 1 / 3) : 7.787 * z + 16 / 116;
+        return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+      }
+      /**
+       * Gets this color's hex value, including alpha channel (i.e. 0xFF00FFFF)
+       */
+    }, {
+      key: "hex",
+      get: function get() {
+        return Number(this._hex);
+      }
+      /**
+       * Sets this color's hex value, including alpha channel (i.e. 0xFF00FFFF)
+       */,
+      set: function set(value) {
+        this._hex = BigInt(value);
+        this._rgba = Color._getRgba(this._hex);
+      }
+      /**
+       * Gets this color's hsl (Hue, Saturation, Lightness) value, excluding the alpha channel.
+       * @note The hue value is in the range from 0 to 360 degrees.
+       * @note The saturation value is in the range of 0 to 100.
+       * @note the lightness value is in the range of 0 to 100.
+       */
+    }, {
+      key: "hsl",
+      get: function get() {
+        return Color.getHsl(this);
+      }
+      /**
+       * The red channel of this color, on a scale from 0 to 255
+       */
+    }, {
+      key: "red",
+      get: function get() {
+        return this.rgba[0];
+      }
+      /**
+       * The green channel of this color, on a scale from 0 to 255
+       */
+    }, {
+      key: "green",
+      get: function get() {
+        return this.rgba[1];
+      }
+      /**
+       * The blue channel of this color, on a scale from 0 to 255
+       */
+    }, {
+      key: "blue",
+      get: function get() {
+        return this.rgba[2];
+      }
+      /**
+       * The alpha channel of this color, on a scale from 0 to 255
+       */
+    }, {
+      key: "alpha",
+      get: function get() {
+        return this.rgba[3];
+      }
+      /**
+       * The red channel of this color, on a scale from 0 to 1
+       */
+    }, {
+      key: "normalizedRed",
+      get: function get() {
+        return this.red / 255;
+      }
+      /**
+       * The green channel of this color, on a scale from 0 to 1
+       */
+    }, {
+      key: "normalizedGreen",
+      get: function get() {
+        return this.green / 255;
+      }
+      /**
+       * The blue channel of this color, on a scale from 0 to 1
+       */
+    }, {
+      key: "normalizedBlue",
+      get: function get() {
+        return this.blue / 255;
+      }
+      /**
+       * The alpha channel of this color, on a scale from 0 to 1
+       */
+    }, {
+      key: "normalizedAlpha",
+      get: function get() {
+        return this.alpha / 255;
+      }
+    }, {
+      key: "clone",
+      value: function clone() {
+        return new Color(this._hex);
+      }
+    }, {
+      key: "equals",
+      value: function equals(color) {
+        return color instanceof Color && color._hex === this._hex;
+      }
+      /**
+       * Mixes two colors together.
+       * @param source The source of the color to mix.
+       * @param weight The normalized weight from 0 to 1 of the mixture. 0 will result in all this color, 1 will result in all of the color defined by "source". Defaults to 0.5.
+       */
+    }, {
+      key: "mix",
+      value: function mix(source) {
+        var weight = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0.5;
+        var color = Color.from(source);
+        this._rgba = [this.red + (color.red - this.red) * weight, this.green + (color.green - this.green) * weight, this.blue + (color.blue - this.blue) * weight, this.alpha + (color.alpha - this.alpha) * weight];
+      }
+    }, {
+      key: "chooseFromPalette",
+      value: function chooseFromPalette(palette) {
+        var _this = this;
+        var _palette = _slicedToArray(palette, 1),
+          color = _palette[0];
+        var result = palette.reduce(function (accumulator, color) {
+          var delta = Color.getCielabDelta(_this, color);
+          return accumulator.delta === undefined || delta < accumulator.delta ? {
+            color: color,
+            delta: delta
+          } : accumulator;
+        }, {
+          color: color
+        });
+        return result.color;
+      }
+    }, {
+      key: "toString",
+      value: function toString() {
+        return "[(r: ".concat(this.red, ", g: ").concat(this.green, ", b: ").concat(this.blue, "), (#").concat(this.hex.toString(16).padStart(8, "0"), ")]");
+      }
+    }], [{
+      key: "getRgba",
+      value: function getRgba(color) {
+        return Color.from(color).rgba;
+      }
+    }, {
+      key: "getHex",
+      value: function getHex(color) {
+        return Color.from(color).hex;
+      }
+    }, {
+      key: "getNormalizedRgba",
+      value: function getNormalizedRgba(color) {
+        return Color.from(color).normalizedRgba;
+      }
+    }, {
+      key: "getHsl",
+      value: function getHsl(color) {
+        var _Color$getNormalizedR = Color.getNormalizedRgba(color),
+          _Color$getNormalizedR2 = _slicedToArray(_Color$getNormalizedR, 3),
+          red = _Color$getNormalizedR2[0],
+          green = _Color$getNormalizedR2[1],
+          blue = _Color$getNormalizedR2[2];
+        var lightness = Math.max(red, green, blue);
+        var saturation = lightness - Math.min(red, green, blue);
+        var hue = saturation ? lightness === red ? (green - blue) / saturation : lightness === green ? 2 + (blue - red) / saturation : 4 + (red - green) / saturation : 0;
+        return [60 * hue < 0 ? 60 * hue + 360 : 60 * hue, 100 * (saturation ? lightness <= 0.5 ? saturation / (2 * lightness - saturation) : saturation / (2 - (2 * lightness - saturation)) : 0), 100 * (2 * lightness - saturation) / 2];
+      }
+      /**
+       * Gets the difference between two colors via Cielab ΔE*.
+       * https://en.wikipedia.org/wiki/Color_difference#CIELAB_%CE%94E*
+       *
+       * @param colorA
+       * @param colorB
+       * @returns
+       */
+    }, {
+      key: "getCielabDelta",
+      value: function getCielabDelta(colorA, colorB) {
+        colorA = Color.from(colorA);
+        colorB = Color.from(colorB);
+        var labA = colorA.cielab;
+        var labB = colorB.cielab;
+        var deltaL = labA[0] - labB[0];
+        var deltaA = labA[1] - labB[1];
+        var deltaB = labA[2] - labB[2];
+        var c1 = Math.sqrt(labA[1] * labA[1] + labA[2] * labA[2]);
+        var c2 = Math.sqrt(labB[1] * labB[1] + labB[2] * labB[2]);
+        var deltaC = c1 - c2;
+        var deltaH = deltaA * deltaA + deltaB * deltaB - deltaC * deltaC;
+        deltaH = deltaH < 0 ? 0 : Math.sqrt(deltaH);
+        var sc = 1.0 + 0.045 * c1;
+        var sh = 1.0 + 0.015 * c1;
+        var deltaLKlsl = deltaL / 1.0;
+        var deltaCkcsc = deltaC / sc;
+        var deltaHkhsh = deltaH / sh;
+        var i = deltaLKlsl * deltaLKlsl + deltaCkcsc * deltaCkcsc + deltaHkhsh * deltaHkhsh;
+        return i < 0 ? 0 : Math.sqrt(i);
+      }
+    }, {
+      key: "_getHex",
+      value: function _getHex(rgba) {
+        return BigInt(rgba[0]) << 8n * 3n | BigInt(rgba[1]) << 8n * 2n | BigInt(rgba[2]) << 8n * 1n | BigInt(rgba[3]) << 8n * 0n;
+      }
+    }, {
+      key: "_getRgba",
+      value: function _getRgba(hex) {
+        return [Number(hex >> 8n * 3n & 0xffn), Number(hex >> 8n * 2n & 0xffn), Number(hex >> 8n * 1n & 0xffn), Number(hex >> 8n * 0n & 0xffn)];
+      }
+    }, {
+      key: "from",
+      value: function from(source) {
+        if (source instanceof Color) {
+          return source.clone();
+        } else if (typeof source === "number") {
+          return new Color(BigInt(source));
+        } else {
+          return new Color(Color._getHex(source));
+        }
+      }
+    }]);
+  }();
+  _Color = Color;
+  _defineProperty(Color, "BLACK", _Color.from(0x000000FF));
+  _defineProperty(Color, "WHITE", _Color.from(0xFFFFFFFF));
+  _defineProperty(Color, "GRAY", _Color.from(0x808080FF));
+  _defineProperty(Color, "RED", _Color.from(0xFF0000FF));
+  _defineProperty(Color, "GREEN", _Color.from(0x00FF00FF));
+  _defineProperty(Color, "BLUE", _Color.from(0x0000FFFF));
+  _defineProperty(Color, "CYAN", _Color.from(0x00FFFFFF));
+  _defineProperty(Color, "MAGENTA", _Color.from(0xFF00FFFF));
+  _defineProperty(Color, "YELLOW", _Color.from(0xFFFF00FF));
+
+  /**
+   * Used for printing to the console in Color! :D
+   */
+  exports.ConsoleColor = void 0;
+  (function (ConsoleColor) {
+    /**
+     * Special formatting codes.
+     */
+    var Special;
+    (function (Special) {
+      Special.reset = "\x1b[0m";
+      Special.bright = "\x1b[1m";
+      Special.dim = "\x1b[2m";
+      Special.underscore = "\x1b[4m";
+      Special.blink = "\x1b[5m";
+      Special.reverse = "\x1b[7m";
+      Special.hidden = "\x1b[8m";
+    })(Special = ConsoleColor.Special || (ConsoleColor.Special = {}));
+    /**
+     * Foreground color codes.
+     */
+    var Fore;
+    (function (Fore) {
+      Fore.black = "\x1b[30m";
+      Fore.red = "\x1b[31m";
+      Fore.green = "\x1b[32m";
+      Fore.yellow = "\x1b[33m";
+      Fore.blue = "\x1b[34m";
+      Fore.magenta = "\x1b[35m";
+      Fore.cyan = "\x1b[36m";
+      Fore.white = "\x1b[37m";
+      Fore.gray = "\x1b[90m";
+    })(Fore = ConsoleColor.Fore || (ConsoleColor.Fore = {}));
+    (function (Back) {
+      Back.black = "\x1b[40m";
+      Back.red = "\x1b[41m";
+      Back.green = "\x1b[42m";
+      Back.yellow = "\x1b[43m";
+      Back.blue = "\x1b[44m";
+      Back.magenta = "\x1b[45m";
+      Back.cyan = "\x1b[46m";
+      Back.white = "\x1b[47m";
+      Back.gray = "\x1b[100m";
+    })(ConsoleColor.Back || (ConsoleColor.Back = {}));
+    /**
+     * A combination of Foreground and Special formatting codes so you don't have to destructure both.
+     *
+     * `E.G.`
+     *
+     * ```typescript
+     * const { red, reset } = ConsoleColor.Common;
+     * console.log(`I like the color ${red}red${reset}.`);
+     * ```
+     */
+    ConsoleColor.Common = _objectSpread2(_objectSpread2({}, Fore), Special);
+    function closest(color) {
+      var closestColor = Color.from(color).chooseFromPalette(ConsoleColor.SupportedColors);
+      return "\x1B[38;5;".concat(ConsoleColor.SupportedColors.indexOf(closestColor), "m");
+    }
+    ConsoleColor.closest = closest;
+    ConsoleColor.SupportedColors = [0X000000FF, 0XCD3131FF, 0X0DBC79FF, 0XE5E510FF, 0X2472C8FF, 0XBC3FBCFF, 0X11A8CDFF, 0XE5E5E5FF, 0X666666FF, 0XF14C4CFF, 0X23D18BFF, 0XF5F543FF, 0X3B8EEAFF, 0XD670D6FF, 0X29B8DBFF, 0XE5E5E5FF, 0X000000FF, 0X00005FFF, 0X000087FF, 0X0000AFFF, 0X0000D7FF, 0X0000FFFF, 0X005F00FF, 0X005F5FFF, 0X005F87FF, 0X005FAFFF, 0X005FD7FF, 0X005FFFFF, 0X008700FF, 0X00875FFF, 0X008787FF, 0X0087AFFF, 0X0087D7FF, 0X0087FFFF, 0X00AF00FF, 0X00AF5FFF, 0X00AF87FF, 0X00AFAFFF, 0X00AFD7FF, 0X00AFFFFF, 0X00D700FF, 0X00D75FFF, 0X00D787FF, 0X00D7AFFF, 0X00D7D7FF, 0X00D7FFFF, 0X00FF00FF, 0X00FF5FFF, 0X00FF87FF, 0X00FFAFFF, 0X00FFD7FF, 0X00FFFFFF, 0X5F0000FF, 0X5F005FFF, 0X5F0087FF, 0X5F00AFFF, 0X5F00D7FF, 0X5F00FFFF, 0X5F5F00FF, 0X5F5F5FFF, 0X5F5F87FF, 0X5F5FAFFF, 0X5F5FD7FF, 0X5F5FFFFF, 0X5F8700FF, 0X5F875FFF, 0X5F8787FF, 0X5F87AFFF, 0X5F87D7FF, 0X5F87FFFF, 0X5FAF00FF, 0X5FAF5FFF, 0X5FAF87FF, 0X5FAFAFFF, 0X5FAFD7FF, 0X5FAFFFFF, 0X5FD700FF, 0X5FD75FFF, 0X5FD787FF, 0X5FD7AFFF, 0X5FD7D7FF, 0X5FD7FFFF, 0X5FFF00FF, 0X5FFF5FFF, 0X5FFF87FF, 0X5FFFAFFF, 0X5FFFD7FF, 0X5FFFFFFF, 0X870000FF, 0X87005FFF, 0X870087FF, 0X8700AFFF, 0X8700D7FF, 0X8700FFFF, 0X875F00FF, 0X875F5FFF, 0X875F87FF, 0X875FAFFF, 0X875FD7FF, 0X875FFFFF, 0X878700FF, 0X87875FFF, 0X878787FF, 0X8787AFFF, 0X8787D7FF, 0X8787FFFF, 0X87AF00FF, 0X87AF5FFF, 0X87AF87FF, 0X87AFAFFF, 0X87AFD7FF, 0X87AFFFFF, 0X87D700FF, 0X87D75FFF, 0X87D787FF, 0X87D7AFFF, 0X87D7D7FF, 0X87D7FFFF, 0X87FF00FF, 0X87FF5FFF, 0X87FF87FF, 0X87FFAFFF, 0X87FFD7FF, 0X87FFFFFF, 0XAF0000FF, 0XAF005FFF, 0XAF0087FF, 0XAF00AFFF, 0XAF00D7FF, 0XAF00FFFF, 0XAF5F00FF, 0XAF5F5FFF, 0XAF5F87FF, 0XAF5FAFFF, 0XAF5FD7FF, 0XAF5FFFFF, 0XAF8700FF, 0XAF875FFF, 0XAF8787FF, 0XAF87AFFF, 0XAF87D7FF, 0XAF87FFFF, 0XAFAF00FF, 0XAFAF5FFF, 0XAFAF87FF, 0XAFAFAFFF, 0XAFAFD7FF, 0XAFAFFFFF, 0XAFD700FF, 0XAFD75FFF, 0XAFD787FF, 0XAFD7AFFF, 0XAFD7D7FF, 0XAFD7FFFF, 0XAFFF00FF, 0XAFFF5FFF, 0XAFFF87FF, 0XAFFFAFFF, 0XAFFFD7FF, 0XAFFFFFFF, 0XD70000FF, 0XD7005FFF, 0XD70087FF, 0XD700AFFF, 0XD700D7FF, 0XD700FFFF, 0XD75F00FF, 0XD75F5FFF, 0XD75F87FF, 0XD75FAFFF, 0XD75FD7FF, 0XD75FFFFF, 0XD78700FF, 0XD7875FFF, 0XD78787FF, 0XD787AFFF, 0XD787D7FF, 0XD787FFFF, 0XD7AF00FF, 0XD7AF5FFF, 0XD7AF87FF, 0XD7AFAFFF, 0XD7AFD7FF, 0XD7AFFFFF, 0XD7D700FF, 0XD7D75FFF, 0XD7D787FF, 0XD7D7AFFF, 0XD7D7D7FF, 0XD7D7FFFF, 0XD7FF00FF, 0XD7FF5FFF, 0XD7FF87FF, 0XD7FFAFFF, 0XD7FFD7FF, 0XD7FFFFFF, 0XFF0000FF, 0XFF005FFF, 0XFF0087FF, 0XFF00AFFF, 0XFF00D7FF, 0XFF00FFFF, 0XFF5F00FF, 0XFF5F5FFF, 0XFF5F87FF, 0XFF5FAFFF, 0XFF5FD7FF, 0XFF5FFFFF, 0XFF8700FF, 0XFF875FFF, 0XFF8787FF, 0XFF87AFFF, 0XFF87D7FF, 0XFF87FFFF, 0XFFAF00FF, 0XFFAF5FFF, 0XFFAF87FF, 0XFFAFAFFF, 0XFFAFD7FF, 0XFFAFFFFF, 0XFFD700FF, 0XFFD75FFF, 0XFFD787FF, 0XFFD7AFFF, 0XFFD7D7FF, 0XFFD7FFFF, 0XFFFF00FF, 0XFFFF5FFF, 0XFFFF87FF, 0XFFFFAFFF, 0XFFFFD7FF, 0XFFFFFFFF, 0X080808FF, 0X121212FF, 0X1C1C1CFF, 0X262626FF, 0X303030FF, 0X3A3A3AFF, 0X444444FF, 0X4E4E4EFF, 0X585858FF, 0X626262FF, 0X6C6C6CFF, 0X767676FF, 0X808080FF, 0X8A8A8AFF, 0X949494FF, 0X9E9E9EFF, 0XA8A8A8FF, 0XB2B2B2FF, 0XBCBCBCFF, 0XC6C6C6FF, 0XD0D0D0FF, 0XDADADAFF, 0XE4E4E4FF, 0XEEEEEEFF].map(function (hex) {
+      return Color.from(hex);
+    });
+  })(exports.ConsoleColor || (exports.ConsoleColor = {}));
+
   exports.RegularExpression = void 0;
   (function (RegularExpression) {
     RegularExpression.email = /(^[\w\.]+)@((?:[\w-]+\.)+[\w-]{2,4}$)/i;
@@ -1985,91 +2137,6 @@
     })(Text.Parse || (Text.Parse = {}));
   })(exports.Text || (exports.Text = {}));
 
-  /**
-   * Supplies tooling to aid in working with `Date` objects in different time zones.
-   */
-  exports.TimeZone = void 0;
-  (function (TimeZone) {
-    /**
-     * Gets a time zone offset string given a time zone name.
-     *
-     * I.E. GMT-04:00
-     *
-     * @param timeZoneName An IANA time zone name (I.E. America/Halifax)
-     */
-    function getTimeZoneString(timeZoneName) {
-      var timeZoneFormat = new Intl.DateTimeFormat("en-US", {
-        timeZoneName: "longOffset",
-        timeZone: timeZoneName
-      });
-      var formattedParts = timeZoneFormat.formatToParts(0);
-      var timeZoneOffsetPart = formattedParts.find(function (part) {
-        return part.type === "timeZoneName";
-      });
-      exports.Data.assert(timeZoneOffsetPart !== undefined, "Failed to find time zone offset part while getting offset of \"".concat(timeZoneName, "\"."));
-      return timeZoneOffsetPart.value;
-    }
-    TimeZone.getTimeZoneString = getTimeZoneString;
-    /**
-     * Gets a time zone offset string given a time zone name.
-     *
-     * I.E. GMT-04:00
-     *
-     * @param timeZoneName An IANA time zone name (I.E. America/Halifax).
-     * @returns
-     */
-    function getTimeZoneOffset(timeZoneName) {
-      var timeZoneString = getTimeZoneString(timeZoneName);
-      var timeZoneMatcher = timeZoneString.match(/([A-Z]{3})([+-])([0-9]{2}):([0-9]{2})/);
-      exports.Data.assert(timeZoneMatcher !== null, "Time zone offset part \"".concat(timeZoneString, "\" did not match expected format while getting offset of \"").concat(timeZoneName, "\"."));
-      var _timeZoneMatcher = _slicedToArray(timeZoneMatcher, 5);
-        _timeZoneMatcher[0];
-        var offsetFrom = _timeZoneMatcher[1],
-        direction = _timeZoneMatcher[2],
-        hour = _timeZoneMatcher[3],
-        minute = _timeZoneMatcher[4];
-      var sign = direction === "+" ? -1 : 1;
-      exports.Data.assert(offsetFrom === "GMT", "Expected time zone string to be offset from GMT, but got \"".concat(offsetFrom, "\"."));
-      return sign * (parseInt(hour) + parseInt(minute) / 60);
-    }
-    TimeZone.getTimeZoneOffset = getTimeZoneOffset;
-    /**
-     * Creates a date object where `source`'s values are interpreted as describing the time in a given `timeZone`.
-     *
-     * @param source Source used to create a Date object.
-     * @param timeZone An IANA time zone name (I.E. America/Halifax).
-     * @returns A date object representing an instant in time where `source`'s values would match that of a clock in `timeZone`.
-     */
-    function createDate(source, timeZone) {
-      var date = new Date(Date.UTC.apply(Date, _toConsumableArray(Object.values(source))));
-      date.setHours(date.getHours() + getTimeZoneOffset(timeZone));
-      return date;
-    }
-    TimeZone.createDate = createDate;
-    /**
-     * Creates a date object where `formDateString` is parsed as a date in the supplied `timeZone`.
-     *
-     * @param formDateString A date string in the form format.
-     * @param timeZone An IANA time zone name (I.E. America/Halifax).
-     * @returns A date object representing an instant in time where `formDateString` would match that of a clock in `timeZone`.
-     */
-    function createDateFromFormString(formDateString, timeZone) {
-      var formDateStringMatcher = formDateString.match(/([0-9]{4})-([0-9]{2})-([0-9]{2})/);
-      exports.Data.assert(formDateStringMatcher !== null, "Unexpected form date format \"".concat(formDateString, "\"."));
-      var _formDateStringMatche = _slicedToArray(formDateStringMatcher, 4);
-        _formDateStringMatche[0];
-        var year = _formDateStringMatche[1],
-        month = _formDateStringMatche[2],
-        date = _formDateStringMatche[3];
-      return createDate({
-        year: parseInt(year),
-        monthIndex: parseInt(month) - 1,
-        date: parseInt(date)
-      }, timeZone);
-    }
-    TimeZone.createDateFromFormString = createDateFromFormString;
-  })(exports.TimeZone || (exports.TimeZone = {}));
-
   exports.Typing = void 0;
   (function (Typing) {
     function ArrayLiteral() {
@@ -2157,6 +2224,9 @@
     }
     Typing.withLiterals = withLiterals;
   })(exports.Typing || (exports.Typing = {}));
+
+  var parsed = exports.TimeZone.parse(new Date(), "America/Toronto");
+  console.log(parsed);
 
   exports.Clock = Clock;
   exports.Color = Color;
