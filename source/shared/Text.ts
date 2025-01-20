@@ -205,16 +205,25 @@ export namespace Text {
     }
 
     /**
-     * Gets the name of the month of the year from {@link date}.
-     * @param date The date to get the month from.
+     * Gets the name of the month of the year from {@link monthIndexOrDate}.
+     * 
+     * @note If you specify a month index and the "form" format. The current year will be used as
+     * the year in the month form format.
+     * 
+     * @param monthIndexOrDate A month index, or a date to get the month from.
      * @returns The name of the month of the year.
      */
-    export function month(date: Date, format: "form" | "pretty" = "pretty") {
+    export function month(monthIndexOrDate: Date | number, format: "form" | "pretty" = "pretty") {
+        if (typeof monthIndexOrDate === "number") {
+            const monthIndex = monthIndexOrDate;
+            monthIndexOrDate = new Date();
+            monthIndexOrDate.setMonth(monthIndex);
+        }
         switch (format) {
             case "form":
-                return `${date.getFullYear().toString().padStart(4, "0")}-${(date.getMonth() + 1).toString().padStart(2, "0")}`;
+                return `${monthIndexOrDate.getFullYear().toString().padStart(4, "0")}-${(monthIndexOrDate.getMonth() + 1).toString().padStart(2, "0")}`;
             case "pretty":
-                return date.toLocaleDateString(Text.defaults.locale, { month: "long" })
+                return monthIndexOrDate.toLocaleDateString(Text.defaults.locale, { month: "long" })
             default:
                 throw new Error.Fatal(`Unrecognized date format "${format}".`);
         }

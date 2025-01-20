@@ -81,11 +81,15 @@ export declare namespace Text {
      */
     function time(hoursOfDayOrDate: Date | number, format?: "form" | "pretty"): string;
     /**
-     * Gets the name of the month of the year from {@link date}.
-     * @param date The date to get the month from.
+     * Gets the name of the month of the year from {@link monthIndexOrDate}.
+     *
+     * @note If you specify a month index and the "form" format. The current year will be used as
+     * the year in the month form format.
+     *
+     * @param monthIndexOrDate A month index, or a date to get the month from.
      * @returns The name of the month of the year.
      */
-    function month(date: Date, format?: "form" | "pretty"): string;
+    function month(monthIndexOrDate: Date | number, format?: "form" | "pretty"): string;
     /**
      * Converts a given duration in milliseconds to a string.
      * @param milliseconds Milliseconds to convert into a duration string.

@@ -1934,17 +1934,26 @@
     }
     Text.time = time;
     /**
-     * Gets the name of the month of the year from {@link date}.
-     * @param date The date to get the month from.
+     * Gets the name of the month of the year from {@link monthIndexOrDate}.
+     *
+     * @note If you specify a month index and the "form" format. The current year will be used as
+     * the year in the month form format.
+     *
+     * @param monthIndexOrDate A month index, or a date to get the month from.
      * @returns The name of the month of the year.
      */
-    function month(date) {
+    function month(monthIndexOrDate) {
       var format = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "pretty";
+      if (typeof monthIndexOrDate === "number") {
+        var monthIndex = monthIndexOrDate;
+        monthIndexOrDate = new Date();
+        monthIndexOrDate.setMonth(monthIndex);
+      }
       switch (format) {
         case "form":
-          return "".concat(date.getFullYear().toString().padStart(4, "0"), "-").concat((date.getMonth() + 1).toString().padStart(2, "0"));
+          return "".concat(monthIndexOrDate.getFullYear().toString().padStart(4, "0"), "-").concat((monthIndexOrDate.getMonth() + 1).toString().padStart(2, "0"));
         case "pretty":
-          return date.toLocaleDateString(Text.defaults.locale, {
+          return monthIndexOrDate.toLocaleDateString(Text.defaults.locale, {
             month: "long"
           });
         default:
