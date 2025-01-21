@@ -1,4 +1,5 @@
 import { Error } from "./Error";
+import { TimeZone } from "./TimeZone";
 
 type TextDefaults = {
     locale: Intl.LocalesArgument,
@@ -158,49 +159,91 @@ export namespace Text {
 
     /**
      * Converts a date object into strings of various formats.
+     * 
      * @param date The date to convert.
      * @param format The format to use. ("iso", "form", "pretty")
+     * @param timeZone An IANA time zone name (I.E. America/Halifax). Defaults to current time zone. See {@link TimeZone.getCurrentTimeZone}
+     * 
      * @returns A formatted date string.
      * 
      * @note The "pretty" will use {@link Text.defaults.locale} and {@link Text.defaults.dateFormat}
+     * @note The `timeZone` parameter has no effect when the "iso" format is specified.
      */
-    export function date(date: Date, format: "iso" | "form" | "pretty" = "pretty") {
+    export function date(date: Date, format: "iso" | "form" | "pretty" = "pretty", timeZone: string = TimeZone.getCurrentTimeZone()) {
         switch (format) {
-            case "iso": return date.toISOString();
-            case "form": return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().substring(0, 10);
-            case "pretty": return date.toLocaleDateString(Text.defaults.locale, Text.defaults.dateFormat);
+            case "iso":
+                return date.toISOString();
+            case "form": {
+                const parsedDate = TimeZone.parse(date, timeZone);
+                const displayYear = parsedDate.year.toString().padStart(4, "0");
+                const displayMonth = parsedDate.month.toString().padStart(2, "0");
+                const displayDate = parsedDate.date.toString().padStart(2, "0");
+                return `${displayYear}-${displayMonth}-${displayDate}`;
+            }
+            case "pretty":
+                return date.toLocaleDateString(Text.defaults.locale, { ...Text.defaults.dateFormat, timeZone });
             default: throw new Error.Fatal(`Unrecognized date format ${format}.`);
         }
     }
 
     /**
      * Converts a date or hours number into time strings of various formats.
-     * @param hoursOfDayOrDate A number of hours in a day (0-24) or a date object to convert to a time string.
+     * @param hourOfDayOrDate A number of hours in a day (0-24) or a date object to convert to a time string.
      * @param format The format of the time string.
+     * @param timeZone An IANA time zone name (I.E. America/Halifax). Defaults to current time zone. See {@link TimeZone.getCurrentTimeZone}
+     * 
      * @returns The formatted time string.
+     * 
+     * @note The `timeZone` parameter has no effect when `hoursOfDayOrDate` represents an hour of day.
      */
-    export function time(hoursOfDayOrDate: Date | number, format: "form" | "pretty" = "pretty") {
+    export function time(hourOfDayOrDate: Date | number, format: "form" | "pretty" = "pretty", timeZone: string = TimeZone.getCurrentTimeZone()) {
         switch (format) {
             case "form":
                 let hours: number;
                 let minutes: number;
-                if (typeof hoursOfDayOrDate === "number") {
-                    hours = Math.floor(hoursOfDayOrDate);
-                    minutes = Math.round((hoursOfDayOrDate - hours) * 60);
+                if (typeof hourOfDayOrDate === "number") {
+                    hours = Math.floor(hourOfDayOrDate);
+                    minutes = Math.round((hourOfDayOrDate - hours) * 60);
                 } else {
-                    hours = hoursOfDayOrDate.getHours();
-                    minutes = hoursOfDayOrDate.getMinutes();
+                    const parsedDate = TimeZone.parse(hourOfDayOrDate, timeZone);
+                    hours = parsedDate.hour;
+                    minutes = parsedDate.minute;
                 }
                 return hours.toString().padStart(2, "0") + ":" + minutes.toString().padStart(2, "0");
             case "pretty":
-                if (typeof hoursOfDayOrDate === "number") {
-                    const hours = Math.floor(hoursOfDayOrDate);
-                    const minutes = Math.round((hoursOfDayOrDate - hours) * 60);
-                    hoursOfDayOrDate = new Date(0, 0, 0, hours, minutes);
+                if (typeof hourOfDayOrDate === "number") {
+                    const parsedNow = TimeZone.parse(new Date(), timeZone);
+                    const hours = Math.floor(hourOfDayOrDate);
+                    const minutes = Math.round((hourOfDayOrDate - hours) * 60);
+                    hourOfDayOrDate = TimeZone.createDate({
+                        year: parsedNow.year,
+                        monthIndex: parsedNow.month - 1,
+                        date: parsedNow.date,
+                        hours, minutes
+                    }, timeZone);
                 }
-                return hoursOfDayOrDate.toLocaleTimeString(Text.defaults.locale, Text.defaults.timeFormat);
+                return hourOfDayOrDate.toLocaleTimeString(Text.defaults.locale, { ...Text.defaults.timeFormat, timeZone });
             default:
                 throw new Error.Fatal(`Unrecognized date format "${format}".`);
+        }
+    }
+
+    /**
+     * Gets the name of the day of the week from {@link dayIndexOrDate}.
+     * @param dayIndexOrDate A day of the week index (0-6, starting with Sunday), or a date to get the weekday from.
+     * @param timeZone An IANA time zone name (I.E. America/Halifax). Defaults to current time zone. See {@link TimeZone.getCurrentTimeZone}
+     * 
+     * @returns The name of the day of the week.
+     * 
+     * @note The `timeZone` parameter has no effect when `monthIndexOrDate` represents a month index.
+     */
+    export function weekday(dayIndexOrDate: Date | number, timeZone: string = TimeZone.getCurrentTimeZone()) {
+        if (typeof dayIndexOrDate === "number") {
+            const date = new Date();
+            date.setDate(date.getDate() - date.getDay() + dayIndexOrDate);
+            return date.toLocaleDateString(Text.defaults.locale, { weekday: "long" });
+        } else {
+            return dayIndexOrDate.toLocaleDateString(Text.defaults.locale, { weekday: "long", timeZone });
         }
     }
 
@@ -211,19 +254,26 @@ export namespace Text {
      * the year in the month form format.
      * 
      * @param monthIndexOrDate A month index, or a date to get the month from.
+     * @param format The format of the time string.
+     * @param timeZone An IANA time zone name (I.E. America/Halifax). Defaults to current time zone. See {@link TimeZone.getCurrentTimeZone}
      * @returns The name of the month of the year.
+     * 
+     * @note The `timeZone` parameter has no effect when `monthIndexOrDate` represents a month index.
      */
-    export function month(monthIndexOrDate: Date | number, format: "form" | "pretty" = "pretty") {
+    export function month(monthIndexOrDate: Date | number, format: "form" | "pretty" = "pretty", timeZone: string = TimeZone.getCurrentTimeZone()) {
         if (typeof monthIndexOrDate === "number") {
-            const monthIndex = monthIndexOrDate;
-            monthIndexOrDate = new Date();
-            monthIndexOrDate.setMonth(monthIndex);
+            const parsedNow = TimeZone.parse(new Date(), timeZone);
+            monthIndexOrDate = TimeZone.createDate({
+                year: parsedNow.year,
+                monthIndex: monthIndexOrDate,
+            }, timeZone);
         }
         switch (format) {
             case "form":
-                return `${monthIndexOrDate.getFullYear().toString().padStart(4, "0")}-${(monthIndexOrDate.getMonth() + 1).toString().padStart(2, "0")}`;
+                const parsedDate = TimeZone.parse(monthIndexOrDate, timeZone);
+                return `${parsedDate.year.toString().padStart(4, "0")}-${parsedDate.month.toString().padStart(2, "0")}`;
             case "pretty":
-                return monthIndexOrDate.toLocaleDateString(Text.defaults.locale, { month: "long" })
+                return monthIndexOrDate.toLocaleDateString(Text.defaults.locale, { month: "long", timeZone });
             default:
                 throw new Error.Fatal(`Unrecognized date format "${format}".`);
         }
@@ -258,15 +308,6 @@ export namespace Text {
             }
         }
         return pieces.join(", ");
-    }
-
-    /**
-     * Gets the name of the day of the week from {@link date}.
-     * @param date The date to get the weekday from.
-     * @returns The name of the day of the week.
-     */
-    export function weekday(date: Date) {
-        return date.toLocaleDateString(Text.defaults.locale, { weekday: "long" });
     }
 
     /**
@@ -342,30 +383,39 @@ export namespace Text {
         * Converts a string into a date object.
         * @param dateString The string to parse into a date.
         * @param formFormat If true, parses "dateString" in the current timezone instead of UTC.
+        * @param timeZone An IANA time zone name (I.E. America/Halifax). Defaults to current time zone. See {@link TimeZone.getCurrentTimeZone}
+        * 
         * @returns The parsed date.
+        * 
+        * @note By specifying a `timeZone`, this function will interpret `dateString` as though in `timeZone`.
+        * 
+        * @note This function only parses dates to second precision.
         */
-        export function date(dateString: string, formFormat: boolean) {
+        export function date(dateString: string, formFormat: boolean, timeZone: string = TimeZone.getCurrentTimeZone()) {
             const date = new Date(dateString);
             if (formFormat) {
-                return new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-            } else {
-                return date;
+                date.setTime(date.getTime() + date.getTimezoneOffset() * 60000);
             }
+            return TimeZone.createDate({
+                year: date.getFullYear(),
+                monthIndex: date.getMonth(),
+                date: date.getDate(),
+                hours: date.getHours(),
+                minutes: date.getMinutes(),
+                seconds: date.getSeconds()
+            }, timeZone);
         }
 
         /**
          * Converts a month string into a date object.
          * @note A month string is the format of the value associated with a type="month" HTML input `YYYY-MM`.
          * @param monthString The string to parse into a date.
-         * @returns The parsed date.
+         * @param timeZone An IANA time zone name (I.E. America/Halifax). Defaults to current time zone. See {@link TimeZone.getCurrentTimeZone}
+         * 
+         * @returns A date representing the first of the month specified by `monthString` at 12:00 a.m. in `timeZone`.
          */
-        export function month(monthString: string) {
-            const match = monthString.match(/([0-9]{4})-([0-9]{2})/);
-            if (match === null) {
-                return new Date(NaN);
-            }
-            const [_, year, month] = match;
-            return new Date(parseInt(year), parseInt(month) - 1);
+        export function month(monthString: string, timeZone: string = TimeZone.getCurrentTimeZone()) {
+            return date(`${monthString}-01`, true, timeZone);
         }
 
         /**

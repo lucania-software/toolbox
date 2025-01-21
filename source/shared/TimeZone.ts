@@ -27,7 +27,7 @@ export namespace TimeZone {
      */
     export function parse(date: Date, timeZoneName: string): ParsedDate {
         const formatter = new Intl.DateTimeFormat("en-US", {
-            hour12: false,
+            hourCycle: "h23",
             year: "numeric",
             month: "numeric",
             day: "numeric",
@@ -145,6 +145,18 @@ export namespace TimeZone {
             monthIndex: parseInt(month) - 1,
             date: parseInt(date)
         }, timeZone);
+    }
+
+    /**
+     * Gets the current time zone according to your system locale.
+     * 
+     * @note Think about the environment you're calling this function from. A client browser could potentially return
+     * a different time zone than the server.
+     * 
+     * @returns The current time zone in IANA format. I.E. "America/Halifax".
+     */
+    export function getCurrentTimeZone() {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone;
     }
 
 }

@@ -68,4 +68,13 @@ export declare namespace TimeZone {
      * @returns A date object representing an instant in time where `formDateString` would match that of a clock in `timeZone`.
      */
     function createDateFromFormString(formDateString: string, timeZone: string): Date;
+    /**
+     * Gets the current time zone according to your system locale.
+     *
+     * @note Think about the environment you're calling this function from. A client browser could potentially return
+     * a different time zone than the server.
+     *
+     * @returns The current time zone in IANA format. I.E. "America/Halifax".
+     */
+    function getCurrentTimeZone(): string;
 }

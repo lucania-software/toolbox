@@ -66,20 +66,38 @@ export declare namespace Text {
     function integerSuffix(value: number): string;
     /**
      * Converts a date object into strings of various formats.
+     *
      * @param date The date to convert.
      * @param format The format to use. ("iso", "form", "pretty")
+     * @param timeZone An IANA time zone name (I.E. America/Halifax). Defaults to current time zone. See {@link TimeZone.getCurrentTimeZone}
+     *
      * @returns A formatted date string.
      *
      * @note The "pretty" will use {@link Text.defaults.locale} and {@link Text.defaults.dateFormat}
+     * @note The `timeZone` parameter has no effect when the "iso" format is specified.
      */
-    function date(date: Date, format?: "iso" | "form" | "pretty"): string;
+    function date(date: Date, format?: "iso" | "form" | "pretty", timeZone?: string): string;
     /**
      * Converts a date or hours number into time strings of various formats.
-     * @param hoursOfDayOrDate A number of hours in a day (0-24) or a date object to convert to a time string.
+     * @param hourOfDayOrDate A number of hours in a day (0-24) or a date object to convert to a time string.
      * @param format The format of the time string.
+     * @param timeZone An IANA time zone name (I.E. America/Halifax). Defaults to current time zone. See {@link TimeZone.getCurrentTimeZone}
+     *
      * @returns The formatted time string.
+     *
+     * @note The `timeZone` parameter has no effect when `hoursOfDayOrDate` represents an hour of day.
      */
-    function time(hoursOfDayOrDate: Date | number, format?: "form" | "pretty"): string;
+    function time(hourOfDayOrDate: Date | number, format?: "form" | "pretty", timeZone?: string): string;
+    /**
+     * Gets the name of the day of the week from {@link dayIndexOrDate}.
+     * @param dayIndexOrDate A day of the week index (0-6, starting with Sunday), or a date to get the weekday from.
+     * @param timeZone An IANA time zone name (I.E. America/Halifax). Defaults to current time zone. See {@link TimeZone.getCurrentTimeZone}
+     *
+     * @returns The name of the day of the week.
+     *
+     * @note The `timeZone` parameter has no effect when `monthIndexOrDate` represents a month index.
+     */
+    function weekday(dayIndexOrDate: Date | number, timeZone?: string): string;
     /**
      * Gets the name of the month of the year from {@link monthIndexOrDate}.
      *
@@ -87,9 +105,13 @@ export declare namespace Text {
      * the year in the month form format.
      *
      * @param monthIndexOrDate A month index, or a date to get the month from.
+     * @param format The format of the time string.
+     * @param timeZone An IANA time zone name (I.E. America/Halifax). Defaults to current time zone. See {@link TimeZone.getCurrentTimeZone}
      * @returns The name of the month of the year.
+     *
+     * @note The `timeZone` parameter has no effect when `monthIndexOrDate` represents a month index.
      */
-    function month(monthIndexOrDate: Date | number, format?: "form" | "pretty"): string;
+    function month(monthIndexOrDate: Date | number, format?: "form" | "pretty", timeZone?: string): string;
     /**
      * Converts a given duration in milliseconds to a string.
      * @param milliseconds Milliseconds to convert into a duration string.
@@ -99,12 +121,6 @@ export declare namespace Text {
      * @returns A duration string.
      */
     function duration(milliseconds: number, maximumPrecision?: Precision, minimumPrecision?: Precision, pluralize?: boolean): string;
-    /**
-     * Gets the name of the day of the week from {@link date}.
-     * @param date The date to get the weekday from.
-     * @returns The name of the day of the week.
-     */
-    function weekday(date: Date): string;
     /**
      * Creates a string from {@link currency}.
      * @param currency The currency to convert to a string.
@@ -145,16 +161,24 @@ export declare namespace Text {
         * Converts a string into a date object.
         * @param dateString The string to parse into a date.
         * @param formFormat If true, parses "dateString" in the current timezone instead of UTC.
+        * @param timeZone An IANA time zone name (I.E. America/Halifax). Defaults to current time zone. See {@link TimeZone.getCurrentTimeZone}
+        *
         * @returns The parsed date.
+        *
+        * @note By specifying a `timeZone`, this function will interpret `dateString` as though in `timeZone`.
+        *
+        * @note This function only parses dates to second precision.
         */
-        function date(dateString: string, formFormat: boolean): Date;
+        function date(dateString: string, formFormat: boolean, timeZone?: string): Date;
         /**
          * Converts a month string into a date object.
          * @note A month string is the format of the value associated with a type="month" HTML input `YYYY-MM`.
          * @param monthString The string to parse into a date.
-         * @returns The parsed date.
+         * @param timeZone An IANA time zone name (I.E. America/Halifax). Defaults to current time zone. See {@link TimeZone.getCurrentTimeZone}
+         *
+         * @returns A date representing the first of the month specified by `monthString` at 12:00 a.m. in `timeZone`.
          */
-        function month(monthString: string): Date;
+        function month(monthString: string, timeZone?: string): Date;
         /**
          * Converts a form time string (HH:mm) to a number of hours of a day.
          * @param formTimeString The string to parse.
