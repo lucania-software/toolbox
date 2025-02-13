@@ -1539,7 +1539,7 @@
 
   exports.RegularExpression = void 0;
   (function (RegularExpression) {
-    RegularExpression.email = /(^[\w\.]+)@((?:[\w-]+\.)+[\w-]{2,4}$)/i;
+    RegularExpression.email = /(^.+)@((?:[\w-]+\.)+[\w-]{2,4}$)/i;
     RegularExpression.mimeType = /(?:application|audio|font|example|image|message|model|multipart|text|video)\/[a-z0-9+-.]+/i;
   })(exports.RegularExpression || (exports.RegularExpression = {}));
 
