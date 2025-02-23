@@ -189,7 +189,7 @@ export namespace Data {
      * 
      * @returns A copy of {@link target}.
      */
-    export function clone<Target extends object>(target: Target, deep: boolean = false): Target {
+    export function clone<Target>(target: Target, deep: boolean = false): Target {
         if (deep) {
             if (typeof target === "object" && target !== null) {
                 if (Array.isArray(target)) {

@@ -88,7 +88,7 @@ export declare namespace Data {
      *
      * @returns A copy of {@link target}.
      */
-    function clone<Target extends object>(target: Target, deep?: boolean): Target;
+    function clone<Target>(target: Target, deep?: boolean): Target;
     /**
      * Walks across the nested properties of {@link target} and calls {@link callback} for every property.
      * @param target The target object.
