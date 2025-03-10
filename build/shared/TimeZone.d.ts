@@ -29,14 +29,14 @@ export declare namespace TimeZone {
      *
      * @param timeZoneName An IANA time zone name (I.E. America/Halifax)
      */
-    function getTimeZoneString(timeZoneName: string): string;
+    function getTimeZoneString(timeZoneName: string, date: Date): string;
     /**
      * Gets a time zone offset string given a time zone name.
      *
      * @param timeZoneName An IANA time zone name (I.E. America/Halifax).
      * @returns
      */
-    function getTimeZoneOffset(timeZoneName: string): number;
+    function getTimeZoneOffset(timeZoneName: string, date: Date): number;
     /**
      * Parses a time zone offset string into a number.
      *

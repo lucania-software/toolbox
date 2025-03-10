@@ -126,6 +126,17 @@
     };
     return _setPrototypeOf(o, p);
   }
+  function _isNativeReflectConstruct() {
+    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+    if (Reflect.construct.sham) return false;
+    if (typeof Proxy === "function") return true;
+    try {
+      Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {}));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
   function _assertThisInitialized(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
@@ -139,6 +150,20 @@
       throw new TypeError("Derived constructors may only return object or undefined");
     }
     return _assertThisInitialized(self);
+  }
+  function _createSuper(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct();
+    return function _createSuperInternal() {
+      var Super = _getPrototypeOf(Derived),
+        result;
+      if (hasNativeReflectConstruct) {
+        var NewTarget = _getPrototypeOf(this).constructor;
+        result = Reflect.construct(Super, arguments, NewTarget);
+      } else {
+        result = Super.apply(this, arguments);
+      }
+      return _possibleConstructorReturn(this, result);
+    };
   }
   function _slicedToArray(arr, i) {
     return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
@@ -177,7 +202,7 @@
   function _createForOfIteratorHelper(o, allowArrayLike) {
     var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
     if (!it) {
-      if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike) {
+      if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
         if (it) o = it;
         var i = 0;
         var F = function () {};
@@ -250,7 +275,7 @@
       this._lastTimeCheck = this._creationTime;
       this._timers = {};
     }
-    return _createClass(Clock, [{
+    _createClass(Clock, [{
       key: "now",
       get: function get() {
         return performance.now() / 1000;
@@ -306,9 +331,10 @@
         }
       }
     }]);
+    return Clock;
   }();
 
-  var _Color;
+  var _class;
   var Color = /*#__PURE__*/function () {
     function Color(hex) {
       _classCallCheck(this, Color);
@@ -320,7 +346,7 @@
     /**
      * Gets this color's RGBA value as a tuple, on a scale from 0 to 255.
      */
-    return _createClass(Color, [{
+    _createClass(Color, [{
       key: "rgba",
       get: function get() {
         return this._rgba;
@@ -571,17 +597,18 @@
         }
       }
     }]);
+    return Color;
   }();
-  _Color = Color;
-  _defineProperty(Color, "BLACK", _Color.from(0x000000FF));
-  _defineProperty(Color, "WHITE", _Color.from(0xFFFFFFFF));
-  _defineProperty(Color, "GRAY", _Color.from(0x808080FF));
-  _defineProperty(Color, "RED", _Color.from(0xFF0000FF));
-  _defineProperty(Color, "GREEN", _Color.from(0x00FF00FF));
-  _defineProperty(Color, "BLUE", _Color.from(0x0000FFFF));
-  _defineProperty(Color, "CYAN", _Color.from(0x00FFFFFF));
-  _defineProperty(Color, "MAGENTA", _Color.from(0xFF00FFFF));
-  _defineProperty(Color, "YELLOW", _Color.from(0xFFFF00FF));
+  _class = Color;
+  _defineProperty(Color, "BLACK", _class.from(0x000000FF));
+  _defineProperty(Color, "WHITE", _class.from(0xFFFFFFFF));
+  _defineProperty(Color, "GRAY", _class.from(0x808080FF));
+  _defineProperty(Color, "RED", _class.from(0xFF0000FF));
+  _defineProperty(Color, "GREEN", _class.from(0x00FF00FF));
+  _defineProperty(Color, "BLUE", _class.from(0x0000FFFF));
+  _defineProperty(Color, "CYAN", _class.from(0x00FFFFFF));
+  _defineProperty(Color, "MAGENTA", _class.from(0xFF00FFFF));
+  _defineProperty(Color, "YELLOW", _class.from(0xFFFF00FF));
 
   /**
    * Used for printing to the console in Color! :D
@@ -648,20 +675,6 @@
     });
   })(exports.ConsoleColor || (exports.ConsoleColor = {}));
 
-  function _callSuper(_this, derived, args) {
-    function isNativeReflectConstruct() {
-      if (typeof Reflect === "undefined" || !Reflect.construct) return false;
-      if (Reflect.construct.sham) return false;
-      if (typeof Proxy === "function") return true;
-      try {
-        return !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {}));
-      } catch (e) {
-        return false;
-      }
-    }
-    derived = _getPrototypeOf(derived);
-    return _possibleConstructorReturn(_this, isNativeReflectConstruct() ? Reflect.construct(derived, args || [], _getPrototypeOf(_this).constructor) : derived.apply(_this, args));
-  }
   /**
    * A set of semantic errors.
    */
@@ -669,14 +682,15 @@
   (function (Error) {
     Error.Original = globalThis.Error;
     var Named = /*#__PURE__*/function (_Error$Original) {
-      function Named(message, options) {
-        var _this2;
-        _classCallCheck(this, Named);
-        _this2 = _callSuper(this, Named, [message, options]);
-        _this2.name = "".concat(_this2.constructor.name, " Error");
-        return _this2;
-      }
       _inherits(Named, _Error$Original);
+      var _super = _createSuper(Named);
+      function Named(message, options) {
+        var _this;
+        _classCallCheck(this, Named);
+        _this = _super.call(this, message, options);
+        _this.name = "".concat(_this.constructor.name, " Error");
+        return _this;
+      }
       return _createClass(Named);
     }(Error.Original);
     Error.Named = Named;
@@ -684,11 +698,12 @@
      * For when something goes very wrong.
      */
     var Fatal = /*#__PURE__*/function (_Named) {
+      _inherits(Fatal, _Named);
+      var _super2 = _createSuper(Fatal);
       function Fatal(message) {
         _classCallCheck(this, Fatal);
-        return _callSuper(this, Fatal, [message]);
+        return _super2.call(this, message);
       }
-      _inherits(Fatal, _Named);
       return _createClass(Fatal);
     }(Named);
     Error.Fatal = Fatal;
@@ -696,11 +711,12 @@
      * For use for features that haven't been implemented yet.
      */
     var Unimplemented = /*#__PURE__*/function (_Fatal) {
+      _inherits(Unimplemented, _Fatal);
+      var _super3 = _createSuper(Unimplemented);
       function Unimplemented() {
         _classCallCheck(this, Unimplemented);
-        return _callSuper(this, Unimplemented, ["This feature has not been implemented."]);
+        return _super3.call(this, "This feature has not been implemented.");
       }
-      _inherits(Unimplemented, _Fatal);
       return _createClass(Unimplemented);
     }(Fatal);
     Error.Unimplemented = Unimplemented;
@@ -708,11 +724,12 @@
      * Thrown when a Data.assertion is failed.
      */
     var Assertion = /*#__PURE__*/function (_Named2) {
+      _inherits(Assertion, _Named2);
+      var _super4 = _createSuper(Assertion);
       function Assertion(message) {
         _classCallCheck(this, Assertion);
-        return _callSuper(this, Assertion, [message]);
+        return _super4.call(this, message);
       }
-      _inherits(Assertion, _Named2);
       return _createClass(Assertion);
     }(Named);
     Error.Assertion = Assertion;
@@ -720,17 +737,18 @@
      * For use to indicate networks errors whilst using the HTTP protocol.
      */
     var Http = /*#__PURE__*/function (_Named3) {
-      function Http(code, message) {
-        var _this3;
-        _classCallCheck(this, Http);
-        _this3 = _callSuper(this, Http, [message]);
-        _defineProperty(_this3, "code", void 0);
-        _this3.name = "".concat(_this3.name, " (HTTP Status Code ").concat(code, ")");
-        _this3.code = code;
-        return _this3;
-      }
       _inherits(Http, _Named3);
-      return _createClass(Http, null, [{
+      var _super5 = _createSuper(Http);
+      function Http(code, message) {
+        var _this2;
+        _classCallCheck(this, Http);
+        _this2 = _super5.call(this, message);
+        _defineProperty(_assertThisInitialized(_this2), "code", void 0);
+        _this2.name = "".concat(_this2.name, " (HTTP Status Code ").concat(code, ")");
+        _this2.code = code;
+        return _this2;
+      }
+      _createClass(Http, null, [{
         key: "getFromResponse",
         value: function getFromResponse(response) {
           switch (response.status) {
@@ -821,391 +839,434 @@
           }
         }
       }]);
+      return Http;
     }(Named);
     Error.Http = Http;
     /**
      * For use to indicate the server made a mistake over the HTTP protocol.
      */
-    var Server = /*#__PURE__*/function (_Http2) {
+    var Server = /*#__PURE__*/function (_Http) {
+      _inherits(Server, _Http);
+      var _super6 = _createSuper(Server);
       function Server(message) {
         var code = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 500;
         _classCallCheck(this, Server);
-        return _callSuper(this, Server, [code, message]);
+        return _super6.call(this, code, message);
       }
-      _inherits(Server, _Http2);
       return _createClass(Server);
     }(Http);
     Error.Server = Server;
     var InternalServerError = /*#__PURE__*/function (_Server) {
+      _inherits(InternalServerError, _Server);
+      var _super7 = _createSuper(InternalServerError);
       function InternalServerError(message) {
         _classCallCheck(this, InternalServerError);
-        return _callSuper(this, InternalServerError, [message, 500]);
+        return _super7.call(this, message, 500);
       }
-      _inherits(InternalServerError, _Server);
       return _createClass(InternalServerError);
     }(Server);
     Error.InternalServerError = InternalServerError;
     var NotImplemented = /*#__PURE__*/function (_Server2) {
+      _inherits(NotImplemented, _Server2);
+      var _super8 = _createSuper(NotImplemented);
       function NotImplemented(message) {
         _classCallCheck(this, NotImplemented);
-        return _callSuper(this, NotImplemented, [message, 501]);
+        return _super8.call(this, message, 501);
       }
-      _inherits(NotImplemented, _Server2);
       return _createClass(NotImplemented);
     }(Server);
     Error.NotImplemented = NotImplemented;
     var BadGateway = /*#__PURE__*/function (_Server3) {
+      _inherits(BadGateway, _Server3);
+      var _super9 = _createSuper(BadGateway);
       function BadGateway(message) {
         _classCallCheck(this, BadGateway);
-        return _callSuper(this, BadGateway, [message, 502]);
+        return _super9.call(this, message, 502);
       }
-      _inherits(BadGateway, _Server3);
       return _createClass(BadGateway);
     }(Server);
     Error.BadGateway = BadGateway;
     var ServiceUnavailable = /*#__PURE__*/function (_Server4) {
+      _inherits(ServiceUnavailable, _Server4);
+      var _super10 = _createSuper(ServiceUnavailable);
       function ServiceUnavailable(message) {
         _classCallCheck(this, ServiceUnavailable);
-        return _callSuper(this, ServiceUnavailable, [message, 503]);
+        return _super10.call(this, message, 503);
       }
-      _inherits(ServiceUnavailable, _Server4);
       return _createClass(ServiceUnavailable);
     }(Server);
     Error.ServiceUnavailable = ServiceUnavailable;
     var GatewayTimeout = /*#__PURE__*/function (_Server5) {
+      _inherits(GatewayTimeout, _Server5);
+      var _super11 = _createSuper(GatewayTimeout);
       function GatewayTimeout(message) {
         _classCallCheck(this, GatewayTimeout);
-        return _callSuper(this, GatewayTimeout, [message, 504]);
+        return _super11.call(this, message, 504);
       }
-      _inherits(GatewayTimeout, _Server5);
       return _createClass(GatewayTimeout);
     }(Server);
     Error.GatewayTimeout = GatewayTimeout;
     var VersionNotSupported = /*#__PURE__*/function (_Server6) {
+      _inherits(VersionNotSupported, _Server6);
+      var _super12 = _createSuper(VersionNotSupported);
       function VersionNotSupported(message) {
         _classCallCheck(this, VersionNotSupported);
-        return _callSuper(this, VersionNotSupported, [message, 505]);
+        return _super12.call(this, message, 505);
       }
-      _inherits(VersionNotSupported, _Server6);
       return _createClass(VersionNotSupported);
     }(Server);
     Error.VersionNotSupported = VersionNotSupported;
     var VariantAlsoNegotiates = /*#__PURE__*/function (_Server7) {
+      _inherits(VariantAlsoNegotiates, _Server7);
+      var _super13 = _createSuper(VariantAlsoNegotiates);
       function VariantAlsoNegotiates(message) {
         _classCallCheck(this, VariantAlsoNegotiates);
-        return _callSuper(this, VariantAlsoNegotiates, [message, 506]);
+        return _super13.call(this, message, 506);
       }
-      _inherits(VariantAlsoNegotiates, _Server7);
       return _createClass(VariantAlsoNegotiates);
     }(Server);
     Error.VariantAlsoNegotiates = VariantAlsoNegotiates;
     var InsufficientStorage = /*#__PURE__*/function (_Server8) {
+      _inherits(InsufficientStorage, _Server8);
+      var _super14 = _createSuper(InsufficientStorage);
       function InsufficientStorage(message) {
         _classCallCheck(this, InsufficientStorage);
-        return _callSuper(this, InsufficientStorage, [message, 507]);
+        return _super14.call(this, message, 507);
       }
-      _inherits(InsufficientStorage, _Server8);
       return _createClass(InsufficientStorage);
     }(Server);
     Error.InsufficientStorage = InsufficientStorage;
     var LoopDetected = /*#__PURE__*/function (_Server9) {
+      _inherits(LoopDetected, _Server9);
+      var _super15 = _createSuper(LoopDetected);
       function LoopDetected(message) {
         _classCallCheck(this, LoopDetected);
-        return _callSuper(this, LoopDetected, [message, 508]);
+        return _super15.call(this, message, 508);
       }
-      _inherits(LoopDetected, _Server9);
       return _createClass(LoopDetected);
     }(Server);
     Error.LoopDetected = LoopDetected;
     var NotExtended = /*#__PURE__*/function (_Server10) {
+      _inherits(NotExtended, _Server10);
+      var _super16 = _createSuper(NotExtended);
       function NotExtended(message) {
         _classCallCheck(this, NotExtended);
-        return _callSuper(this, NotExtended, [message, 510]);
+        return _super16.call(this, message, 510);
       }
-      _inherits(NotExtended, _Server10);
       return _createClass(NotExtended);
     }(Server);
     Error.NotExtended = NotExtended;
     var NetworkAuthenticationRequired = /*#__PURE__*/function (_Server11) {
+      _inherits(NetworkAuthenticationRequired, _Server11);
+      var _super17 = _createSuper(NetworkAuthenticationRequired);
       function NetworkAuthenticationRequired(message) {
         _classCallCheck(this, NetworkAuthenticationRequired);
-        return _callSuper(this, NetworkAuthenticationRequired, [message, 511]);
+        return _super17.call(this, message, 511);
       }
-      _inherits(NetworkAuthenticationRequired, _Server11);
       return _createClass(NetworkAuthenticationRequired);
     }(Server);
     Error.NetworkAuthenticationRequired = NetworkAuthenticationRequired;
     /**
      * For use to indicate the user made a mistake over the HTTP protocol.
      */
-    var User = /*#__PURE__*/function (_Http3) {
+    var User = /*#__PURE__*/function (_Http2) {
+      _inherits(User, _Http2);
+      var _super18 = _createSuper(User);
       function User(message) {
         var code = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 400;
         _classCallCheck(this, User);
-        return _callSuper(this, User, [code, message]);
+        return _super18.call(this, code, message);
       }
-      _inherits(User, _Http3);
       return _createClass(User);
     }(Http);
     Error.User = User;
     var BadRequest = /*#__PURE__*/function (_User) {
+      _inherits(BadRequest, _User);
+      var _super19 = _createSuper(BadRequest);
       function BadRequest(message) {
         _classCallCheck(this, BadRequest);
-        return _callSuper(this, BadRequest, [message, 400]);
+        return _super19.call(this, message, 400);
       }
-      _inherits(BadRequest, _User);
       return _createClass(BadRequest);
     }(User);
     Error.BadRequest = BadRequest;
     var Unauthorized = /*#__PURE__*/function (_User2) {
+      _inherits(Unauthorized, _User2);
+      var _super20 = _createSuper(Unauthorized);
       function Unauthorized(message) {
         _classCallCheck(this, Unauthorized);
-        return _callSuper(this, Unauthorized, [message, 401]);
+        return _super20.call(this, message, 401);
       }
-      _inherits(Unauthorized, _User2);
       return _createClass(Unauthorized);
     }(User);
     Error.Unauthorized = Unauthorized;
     var PaymentRequired = /*#__PURE__*/function (_User3) {
+      _inherits(PaymentRequired, _User3);
+      var _super21 = _createSuper(PaymentRequired);
       function PaymentRequired(message) {
         _classCallCheck(this, PaymentRequired);
-        return _callSuper(this, PaymentRequired, [message, 402]);
+        return _super21.call(this, message, 402);
       }
-      _inherits(PaymentRequired, _User3);
       return _createClass(PaymentRequired);
     }(User);
     Error.PaymentRequired = PaymentRequired;
     var Forbidden = /*#__PURE__*/function (_User4) {
+      _inherits(Forbidden, _User4);
+      var _super22 = _createSuper(Forbidden);
       function Forbidden(message) {
         _classCallCheck(this, Forbidden);
-        return _callSuper(this, Forbidden, [message, 403]);
+        return _super22.call(this, message, 403);
       }
-      _inherits(Forbidden, _User4);
       return _createClass(Forbidden);
     }(User);
     Error.Forbidden = Forbidden;
     var NotFound = /*#__PURE__*/function (_User5) {
+      _inherits(NotFound, _User5);
+      var _super23 = _createSuper(NotFound);
       function NotFound(message) {
         _classCallCheck(this, NotFound);
-        return _callSuper(this, NotFound, [message, 404]);
+        return _super23.call(this, message, 404);
       }
-      _inherits(NotFound, _User5);
       return _createClass(NotFound);
     }(User);
     Error.NotFound = NotFound;
     var MethodNotAllowed = /*#__PURE__*/function (_User6) {
+      _inherits(MethodNotAllowed, _User6);
+      var _super24 = _createSuper(MethodNotAllowed);
       function MethodNotAllowed(message) {
         _classCallCheck(this, MethodNotAllowed);
-        return _callSuper(this, MethodNotAllowed, [message, 405]);
+        return _super24.call(this, message, 405);
       }
-      _inherits(MethodNotAllowed, _User6);
       return _createClass(MethodNotAllowed);
     }(User);
     Error.MethodNotAllowed = MethodNotAllowed;
     var NotAcceptable = /*#__PURE__*/function (_User7) {
+      _inherits(NotAcceptable, _User7);
+      var _super25 = _createSuper(NotAcceptable);
       function NotAcceptable(message) {
         _classCallCheck(this, NotAcceptable);
-        return _callSuper(this, NotAcceptable, [message, 406]);
+        return _super25.call(this, message, 406);
       }
-      _inherits(NotAcceptable, _User7);
       return _createClass(NotAcceptable);
     }(User);
     Error.NotAcceptable = NotAcceptable;
     var ProxyAuthenticationRequired = /*#__PURE__*/function (_User8) {
+      _inherits(ProxyAuthenticationRequired, _User8);
+      var _super26 = _createSuper(ProxyAuthenticationRequired);
       function ProxyAuthenticationRequired(message) {
         _classCallCheck(this, ProxyAuthenticationRequired);
-        return _callSuper(this, ProxyAuthenticationRequired, [message, 407]);
+        return _super26.call(this, message, 407);
       }
-      _inherits(ProxyAuthenticationRequired, _User8);
       return _createClass(ProxyAuthenticationRequired);
     }(User);
     Error.ProxyAuthenticationRequired = ProxyAuthenticationRequired;
     var RequestTimeout = /*#__PURE__*/function (_User9) {
+      _inherits(RequestTimeout, _User9);
+      var _super27 = _createSuper(RequestTimeout);
       function RequestTimeout(message) {
         _classCallCheck(this, RequestTimeout);
-        return _callSuper(this, RequestTimeout, [message, 408]);
+        return _super27.call(this, message, 408);
       }
-      _inherits(RequestTimeout, _User9);
       return _createClass(RequestTimeout);
     }(User);
     Error.RequestTimeout = RequestTimeout;
     var Conflict = /*#__PURE__*/function (_User10) {
+      _inherits(Conflict, _User10);
+      var _super28 = _createSuper(Conflict);
       function Conflict(message) {
         _classCallCheck(this, Conflict);
-        return _callSuper(this, Conflict, [message, 409]);
+        return _super28.call(this, message, 409);
       }
-      _inherits(Conflict, _User10);
       return _createClass(Conflict);
     }(User);
     Error.Conflict = Conflict;
     var Gone = /*#__PURE__*/function (_User11) {
+      _inherits(Gone, _User11);
+      var _super29 = _createSuper(Gone);
       function Gone(message) {
         _classCallCheck(this, Gone);
-        return _callSuper(this, Gone, [message, 410]);
+        return _super29.call(this, message, 410);
       }
-      _inherits(Gone, _User11);
       return _createClass(Gone);
     }(User);
     Error.Gone = Gone;
     var LengthRequired = /*#__PURE__*/function (_User12) {
+      _inherits(LengthRequired, _User12);
+      var _super30 = _createSuper(LengthRequired);
       function LengthRequired(message) {
         _classCallCheck(this, LengthRequired);
-        return _callSuper(this, LengthRequired, [message, 411]);
+        return _super30.call(this, message, 411);
       }
-      _inherits(LengthRequired, _User12);
       return _createClass(LengthRequired);
     }(User);
     Error.LengthRequired = LengthRequired;
     var PreconditionFailed = /*#__PURE__*/function (_User13) {
+      _inherits(PreconditionFailed, _User13);
+      var _super31 = _createSuper(PreconditionFailed);
       function PreconditionFailed(message) {
         _classCallCheck(this, PreconditionFailed);
-        return _callSuper(this, PreconditionFailed, [message, 412]);
+        return _super31.call(this, message, 412);
       }
-      _inherits(PreconditionFailed, _User13);
       return _createClass(PreconditionFailed);
     }(User);
     Error.PreconditionFailed = PreconditionFailed;
     var PayloadTooLarge = /*#__PURE__*/function (_User14) {
+      _inherits(PayloadTooLarge, _User14);
+      var _super32 = _createSuper(PayloadTooLarge);
       function PayloadTooLarge(message) {
         _classCallCheck(this, PayloadTooLarge);
-        return _callSuper(this, PayloadTooLarge, [message, 413]);
+        return _super32.call(this, message, 413);
       }
-      _inherits(PayloadTooLarge, _User14);
       return _createClass(PayloadTooLarge);
     }(User);
     Error.PayloadTooLarge = PayloadTooLarge;
     var UriTooLong = /*#__PURE__*/function (_User15) {
+      _inherits(UriTooLong, _User15);
+      var _super33 = _createSuper(UriTooLong);
       function UriTooLong(message) {
         _classCallCheck(this, UriTooLong);
-        return _callSuper(this, UriTooLong, [message, 414]);
+        return _super33.call(this, message, 414);
       }
-      _inherits(UriTooLong, _User15);
       return _createClass(UriTooLong);
     }(User);
     Error.UriTooLong = UriTooLong;
     var UnsupportedMediaType = /*#__PURE__*/function (_User16) {
+      _inherits(UnsupportedMediaType, _User16);
+      var _super34 = _createSuper(UnsupportedMediaType);
       function UnsupportedMediaType(message) {
         _classCallCheck(this, UnsupportedMediaType);
-        return _callSuper(this, UnsupportedMediaType, [message, 415]);
+        return _super34.call(this, message, 415);
       }
-      _inherits(UnsupportedMediaType, _User16);
       return _createClass(UnsupportedMediaType);
     }(User);
     Error.UnsupportedMediaType = UnsupportedMediaType;
     var RangeNotSatisfiable = /*#__PURE__*/function (_User17) {
+      _inherits(RangeNotSatisfiable, _User17);
+      var _super35 = _createSuper(RangeNotSatisfiable);
       function RangeNotSatisfiable(message) {
         _classCallCheck(this, RangeNotSatisfiable);
-        return _callSuper(this, RangeNotSatisfiable, [message, 416]);
+        return _super35.call(this, message, 416);
       }
-      _inherits(RangeNotSatisfiable, _User17);
       return _createClass(RangeNotSatisfiable);
     }(User);
     Error.RangeNotSatisfiable = RangeNotSatisfiable;
     var ExpectationFailed = /*#__PURE__*/function (_User18) {
+      _inherits(ExpectationFailed, _User18);
+      var _super36 = _createSuper(ExpectationFailed);
       function ExpectationFailed(message) {
         _classCallCheck(this, ExpectationFailed);
-        return _callSuper(this, ExpectationFailed, [message, 417]);
+        return _super36.call(this, message, 417);
       }
-      _inherits(ExpectationFailed, _User18);
       return _createClass(ExpectationFailed);
     }(User);
     Error.ExpectationFailed = ExpectationFailed;
     var Teapot = /*#__PURE__*/function (_User19) {
+      _inherits(Teapot, _User19);
+      var _super37 = _createSuper(Teapot);
       function Teapot(message) {
         _classCallCheck(this, Teapot);
-        return _callSuper(this, Teapot, [message, 418]);
+        return _super37.call(this, message, 418);
       }
-      _inherits(Teapot, _User19);
       return _createClass(Teapot);
     }(User);
     Error.Teapot = Teapot;
     var MisdirectedRequest = /*#__PURE__*/function (_User20) {
+      _inherits(MisdirectedRequest, _User20);
+      var _super38 = _createSuper(MisdirectedRequest);
       function MisdirectedRequest(message) {
         _classCallCheck(this, MisdirectedRequest);
-        return _callSuper(this, MisdirectedRequest, [message, 421]);
+        return _super38.call(this, message, 421);
       }
-      _inherits(MisdirectedRequest, _User20);
       return _createClass(MisdirectedRequest);
     }(User);
     Error.MisdirectedRequest = MisdirectedRequest;
     var UnprocessableContent = /*#__PURE__*/function (_User21) {
+      _inherits(UnprocessableContent, _User21);
+      var _super39 = _createSuper(UnprocessableContent);
       function UnprocessableContent(message) {
         _classCallCheck(this, UnprocessableContent);
-        return _callSuper(this, UnprocessableContent, [message, 422]);
+        return _super39.call(this, message, 422);
       }
-      _inherits(UnprocessableContent, _User21);
       return _createClass(UnprocessableContent);
     }(User);
     Error.UnprocessableContent = UnprocessableContent;
     var Locked = /*#__PURE__*/function (_User22) {
+      _inherits(Locked, _User22);
+      var _super40 = _createSuper(Locked);
       function Locked(message) {
         _classCallCheck(this, Locked);
-        return _callSuper(this, Locked, [message, 423]);
+        return _super40.call(this, message, 423);
       }
-      _inherits(Locked, _User22);
       return _createClass(Locked);
     }(User);
     Error.Locked = Locked;
     var FailedDependency = /*#__PURE__*/function (_User23) {
+      _inherits(FailedDependency, _User23);
+      var _super41 = _createSuper(FailedDependency);
       function FailedDependency(message) {
         _classCallCheck(this, FailedDependency);
-        return _callSuper(this, FailedDependency, [message, 424]);
+        return _super41.call(this, message, 424);
       }
-      _inherits(FailedDependency, _User23);
       return _createClass(FailedDependency);
     }(User);
     Error.FailedDependency = FailedDependency;
     var TooEarly = /*#__PURE__*/function (_User24) {
+      _inherits(TooEarly, _User24);
+      var _super42 = _createSuper(TooEarly);
       function TooEarly(message) {
         _classCallCheck(this, TooEarly);
-        return _callSuper(this, TooEarly, [message, 425]);
+        return _super42.call(this, message, 425);
       }
-      _inherits(TooEarly, _User24);
       return _createClass(TooEarly);
     }(User);
     Error.TooEarly = TooEarly;
     var UpgradeRequired = /*#__PURE__*/function (_User25) {
+      _inherits(UpgradeRequired, _User25);
+      var _super43 = _createSuper(UpgradeRequired);
       function UpgradeRequired(message) {
         _classCallCheck(this, UpgradeRequired);
-        return _callSuper(this, UpgradeRequired, [message, 426]);
+        return _super43.call(this, message, 426);
       }
-      _inherits(UpgradeRequired, _User25);
       return _createClass(UpgradeRequired);
     }(User);
     Error.UpgradeRequired = UpgradeRequired;
     var PreconditionRequired = /*#__PURE__*/function (_User26) {
+      _inherits(PreconditionRequired, _User26);
+      var _super44 = _createSuper(PreconditionRequired);
       function PreconditionRequired(message) {
         _classCallCheck(this, PreconditionRequired);
-        return _callSuper(this, PreconditionRequired, [message, 428]);
+        return _super44.call(this, message, 428);
       }
-      _inherits(PreconditionRequired, _User26);
       return _createClass(PreconditionRequired);
     }(User);
     Error.PreconditionRequired = PreconditionRequired;
     var TooManyRequests = /*#__PURE__*/function (_User27) {
+      _inherits(TooManyRequests, _User27);
+      var _super45 = _createSuper(TooManyRequests);
       function TooManyRequests(message) {
         _classCallCheck(this, TooManyRequests);
-        return _callSuper(this, TooManyRequests, [message, 429]);
+        return _super45.call(this, message, 429);
       }
-      _inherits(TooManyRequests, _User27);
       return _createClass(TooManyRequests);
     }(User);
     Error.TooManyRequests = TooManyRequests;
     var RequestHeaderFieldsTooLarge = /*#__PURE__*/function (_User28) {
+      _inherits(RequestHeaderFieldsTooLarge, _User28);
+      var _super46 = _createSuper(RequestHeaderFieldsTooLarge);
       function RequestHeaderFieldsTooLarge(message) {
         _classCallCheck(this, RequestHeaderFieldsTooLarge);
-        return _callSuper(this, RequestHeaderFieldsTooLarge, [message, 431]);
+        return _super46.call(this, message, 431);
       }
-      _inherits(RequestHeaderFieldsTooLarge, _User28);
       return _createClass(RequestHeaderFieldsTooLarge);
     }(User);
     Error.RequestHeaderFieldsTooLarge = RequestHeaderFieldsTooLarge;
     var UnavailableForLegalReasons = /*#__PURE__*/function (_User29) {
+      _inherits(UnavailableForLegalReasons, _User29);
+      var _super47 = _createSuper(UnavailableForLegalReasons);
       function UnavailableForLegalReasons(message) {
         _classCallCheck(this, UnavailableForLegalReasons);
-        return _callSuper(this, UnavailableForLegalReasons, [message, 451]);
+        return _super47.call(this, message, 451);
       }
-      _inherits(UnavailableForLegalReasons, _User29);
       return _createClass(UnavailableForLegalReasons);
     }(User);
     Error.UnavailableForLegalReasons = UnavailableForLegalReasons;
@@ -1614,12 +1675,12 @@
      *
      * @param timeZoneName An IANA time zone name (I.E. America/Halifax)
      */
-    function getTimeZoneString(timeZoneName) {
+    function getTimeZoneString(timeZoneName, date) {
       var timeZoneFormat = new Intl.DateTimeFormat("en-US", {
         timeZoneName: "longOffset",
         timeZone: timeZoneName
       });
-      var formattedParts = timeZoneFormat.formatToParts(0);
+      var formattedParts = timeZoneFormat.formatToParts(date);
       var timeZoneOffsetPart = formattedParts.find(function (part) {
         return part.type === "timeZoneName";
       });
@@ -1633,8 +1694,8 @@
      * @param timeZoneName An IANA time zone name (I.E. America/Halifax).
      * @returns
      */
-    function getTimeZoneOffset(timeZoneName) {
-      var timeZoneString = getTimeZoneString(timeZoneName);
+    function getTimeZoneOffset(timeZoneName, date) {
+      var timeZoneString = getTimeZoneString(timeZoneName, date);
       return parseTimeZoneOffset(timeZoneString);
     }
     TimeZone.getTimeZoneOffset = getTimeZoneOffset;
@@ -1666,8 +1727,8 @@
      * @returns A date object representing an instant in time where `source`'s values would match that of a clock in `timeZone`.
      */
     function createDate(source, timeZone) {
-      var date = new Date(Date.UTC.apply(Date, _toConsumableArray(Object.values(source))));
-      date.setHours(date.getHours() + getTimeZoneOffset(timeZone));
+      var date = new Date(Date.UTC(exports.Data.get(source, "year", 0), exports.Data.get(source, "monthIndex", 0), exports.Data.get(source, "date", 0), exports.Data.get(source, "hours", 0), exports.Data.get(source, "minutes", 0), exports.Data.get(source, "seconds", 0), exports.Data.get(source, "milliseconds", 0)));
+      date.setHours(date.getHours() + getTimeZoneOffset(timeZone, date));
       return date;
     }
     TimeZone.createDate = createDate;

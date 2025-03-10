@@ -71,9 +71,9 @@ export namespace TimeZone {
      * 
      * @param timeZoneName An IANA time zone name (I.E. America/Halifax)
      */
-    export function getTimeZoneString(timeZoneName: string) {
+    export function getTimeZoneString(timeZoneName: string, date: Date) {
         const timeZoneFormat = new Intl.DateTimeFormat("en-US", { timeZoneName: "longOffset", timeZone: timeZoneName });
-        const formattedParts = timeZoneFormat.formatToParts(0);
+        const formattedParts = timeZoneFormat.formatToParts(date);
         const timeZoneOffsetPart = formattedParts.find((part) => part.type === "timeZoneName");
         Data.assert(timeZoneOffsetPart !== undefined, `Failed to find time zone offset part while getting offset of "${timeZoneName}".`);
         return timeZoneOffsetPart.value;
@@ -85,8 +85,8 @@ export namespace TimeZone {
      * @param timeZoneName An IANA time zone name (I.E. America/Halifax).
      * @returns
      */
-    export function getTimeZoneOffset(timeZoneName: string) {
-        const timeZoneString = getTimeZoneString(timeZoneName);
+    export function getTimeZoneOffset(timeZoneName: string, date: Date) {
+        const timeZoneString = getTimeZoneString(timeZoneName, date);
         return parseTimeZoneOffset(timeZoneString);
     }
 
@@ -124,8 +124,16 @@ export namespace TimeZone {
         },
         timeZone: string
     ) {
-        const date = new Date(Date.UTC(...Object.values(source) as [number]));
-        date.setHours(date.getHours() + getTimeZoneOffset(timeZone));
+        const date = new Date(Date.UTC(
+            Data.get(source, "year", 0),
+            Data.get(source, "monthIndex", 0),
+            Data.get(source, "date", 0),
+            Data.get(source, "hours", 0),
+            Data.get(source, "minutes", 0),
+            Data.get(source, "seconds", 0),
+            Data.get(source, "milliseconds", 0)
+        ));
+        date.setHours(date.getHours() + getTimeZoneOffset(timeZone, date));
         return date;
     }
 

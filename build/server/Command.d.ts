@@ -1,3 +1,5 @@
+/// <reference types="node" />
+/// <reference types="node" />
 import { ChildProcess } from "child_process";
 export interface CommandOptions {
     currentWorkingDirectory?: string;
