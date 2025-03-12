@@ -139,9 +139,10 @@ export namespace Data {
      * @returns True if the target is updated, false otherwise.
      */
     export function set<Path extends string, Value>(target: any, path: Path, value: Value): target is ObjectWithPath<Path, Value> {
-        const pieces = path === "" ? [] : path.split(".");
-        const key = pieces.shift();
+        const pieces = path === "" ? [] : path.split(/(?<!\\)\./);
+        let key = pieces.shift();
         if (key !== undefined) {
+            key = key.replaceAll("\\.", ".");
             if (pieces.length === 0) {
                 target[key] = value as any;
             } else {
@@ -240,6 +241,7 @@ export namespace Data {
     export function flatten(target: any) {
         const flattenedTarget: any = {};
         Data.walk(target, (_, property, path) => {
+            path = path.replaceAll(".", "\\.");
             if (typeof property === "object") {
                 if (!isPlain(property, false)) {
                     flattenedTarget[path] = property;
@@ -274,7 +276,8 @@ export namespace Data {
             return target;
         } else {
             const path = keys.join(".");
-            flattened[path] = target;
+            const key = path.replaceAll(".", "\\.");
+            flattened[key] = target;
         }
         return flattened;
     }

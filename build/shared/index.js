@@ -1343,9 +1343,10 @@
      * @returns True if the target is updated, false otherwise.
      */
     function set(target, path, value) {
-      var pieces = path === "" ? [] : path.split(".");
+      var pieces = path === "" ? [] : path.split(/(?<!\\)\./);
       var key = pieces.shift();
       if (key !== undefined) {
+        key = key.replaceAll("\\.", ".");
         if (pieces.length === 0) {
           target[key] = value;
         } else {
@@ -1456,6 +1457,7 @@
     function flatten(target) {
       var flattenedTarget = {};
       Data.walk(target, function (_, property, path) {
+        path = path.replaceAll(".", "\\.");
         if (_typeof(property) === "object") {
           if (!isPlain(property, false)) {
             flattenedTarget[path] = property;
@@ -1491,7 +1493,8 @@
         return target;
       } else {
         var path = keys.join(".");
-        flattened[path] = target;
+        var _key = path.replaceAll(".", "\\.");
+        flattened[_key] = target;
       }
       return flattened;
     }
