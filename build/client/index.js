@@ -643,24 +643,22 @@
      * @param headers The headers to send to {@link url}
      * @returns The response from {@link url}
      */
-    function post(_x4) {
+    function post(_x4, _x5) {
       return _post.apply(this, arguments);
     }
     function _post() {
-      _post = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(url) {
-        var body,
-          headers,
+      _post = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(url, body) {
+        var headers,
           _args3 = arguments;
         return _regeneratorRuntime().wrap(function _callee3$(_context3) {
           while (1) switch (_context3.prev = _context3.next) {
             case 0:
-              body = _args3.length > 1 && _args3[1] !== undefined ? _args3[1] : {};
               headers = _args3.length > 2 && _args3[2] !== undefined ? _args3[2] : {};
-              _context3.next = 4;
+              _context3.next = 3;
               return Network.request(url, RequestMethod.POST, body, headers);
-            case 4:
+            case 3:
               return _context3.abrupt("return", _context3.sent);
-            case 5:
+            case 4:
             case "end":
               return _context3.stop();
           }
@@ -677,7 +675,7 @@
      * @param headers The headers to send to {@link url}
      * @returns The response from {@link url}
      */
-    function put(_x5, _x6) {
+    function put(_x6, _x7) {
       return _put.apply(this, arguments);
     }
     function _put() {
@@ -709,7 +707,7 @@
      * @param headers The headers to send to {@link url}
      * @returns The response from {@link url}
      */
-    function patch(_x7, _x8) {
+    function patch(_x8, _x9) {
       return _patch.apply(this, arguments);
     }
     function _patch() {
@@ -743,7 +741,7 @@
      * @param headers The headers to send to {@link url}
      * @returns The response from {@link url}
      */
-    function deleteRequest(_x9, _x10) {
+    function deleteRequest(_x10, _x11) {
       return _deleteRequest.apply(this, arguments);
     }
     function _deleteRequest() {
