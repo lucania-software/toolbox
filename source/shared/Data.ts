@@ -221,8 +221,9 @@ export namespace Data {
      * @param level The level of nesting from the starting path in {@link target}.
      */
     export function walk(target: any, callback: WalkObjectCallback, path: string = "", level: number = 0) {
-        for (const key in target) {
+        for (let key in target) {
             const value = target[key];
+            key = key.replaceAll(".", "\\.");
             const valuePath = path === "" ? key : path + "." + key;
             const finished = callback(target, value, valuePath, level);
             if (!finished && typeof value === "object" && value !== null) {
@@ -241,7 +242,6 @@ export namespace Data {
     export function flatten(target: any) {
         const flattenedTarget: any = {};
         Data.walk(target, (_, property, path) => {
-            path = path.replaceAll(".", "\\.");
             if (typeof property === "object") {
                 if (!isPlain(property, false)) {
                     flattenedTarget[path] = property;
@@ -275,9 +275,8 @@ export namespace Data {
         } else if (keys.length === 0) {
             return target;
         } else {
-            const path = keys.join(".");
-            const key = path.replaceAll(".", "\\.");
-            flattened[key] = target;
+            const path = keys.map((key) => key.replaceAll(".", "\\.")).join(".");
+            flattened[path] = target;
         }
         return flattened;
     }

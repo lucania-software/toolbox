@@ -1439,6 +1439,7 @@
       var level = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
       for (var key in target) {
         var value = target[key];
+        key = key.replaceAll(".", "\\.");
         var valuePath = path === "" ? key : path + "." + key;
         var finished = callback(target, value, valuePath, level);
         if (!finished && _typeof(value) === "object" && value !== null) {
@@ -1457,7 +1458,6 @@
     function flatten(target) {
       var flattenedTarget = {};
       Data.walk(target, function (_, property, path) {
-        path = path.replaceAll(".", "\\.");
         if (_typeof(property) === "object") {
           if (!isPlain(property, false)) {
             flattenedTarget[path] = property;
@@ -1492,9 +1492,10 @@
       } else if (keys.length === 0) {
         return target;
       } else {
-        var path = keys.join(".");
-        var _key = path.replaceAll(".", "\\.");
-        flattened[_key] = target;
+        var path = keys.map(function (key) {
+          return key.replaceAll(".", "\\.");
+        }).join(".");
+        flattened[path] = target;
       }
       return flattened;
     }
