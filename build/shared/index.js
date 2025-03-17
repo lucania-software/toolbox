@@ -1731,7 +1731,7 @@
      * @returns A date object representing an instant in time where `source`'s values would match that of a clock in `timeZone`.
      */
     function createDate(source, timeZone) {
-      var date = new Date(Date.UTC(exports.Data.get(source, "year", 0), exports.Data.get(source, "monthIndex", 0), exports.Data.get(source, "date", 0), exports.Data.get(source, "hours", 0), exports.Data.get(source, "minutes", 0), exports.Data.get(source, "seconds", 0), exports.Data.get(source, "milliseconds", 0)));
+      var date = new Date(Date.UTC(exports.Data.get(source, "year", 0), exports.Data.get(source, "monthIndex", 0), exports.Data.get(source, "date", 1), exports.Data.get(source, "hours", 0), exports.Data.get(source, "minutes", 0), exports.Data.get(source, "seconds", 0), exports.Data.get(source, "milliseconds", 0)));
       date.setHours(date.getHours() + getTimeZoneOffset(timeZone, date));
       return date;
     }

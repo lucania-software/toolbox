@@ -127,7 +127,7 @@ export namespace TimeZone {
         const date = new Date(Date.UTC(
             Data.get(source, "year", 0),
             Data.get(source, "monthIndex", 0),
-            Data.get(source, "date", 0),
+            Data.get(source, "date", 1),
             Data.get(source, "hours", 0),
             Data.get(source, "minutes", 0),
             Data.get(source, "seconds", 0),
