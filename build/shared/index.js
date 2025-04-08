@@ -684,13 +684,7 @@
         for (var _len = arguments.length, allParameters = new Array(_len), _key = 0; _key < _len; _key++) {
           allParameters[_key] = arguments[_key];
         }
-        if (allParameters.length > 0) {
-          var firstParameter = allParameters[0],
-            restOfParameters = allParameters.slice(1);
-          consoleOutputFunction.apply(void 0, ["".concat(prefix).concat(firstParameter)].concat(_toConsumableArray(restOfParameters)));
-        } else {
-          consoleOutputFunction(prefix);
-        }
+        consoleOutputFunction.apply(void 0, [prefix].concat(allParameters));
       };
     }
     ConsoleColor.patchConsoleOutput = patchConsoleOutput;
@@ -713,12 +707,12 @@
         red = _ConsoleColor$Common.red,
         gray = _ConsoleColor$Common.gray,
         reset = _ConsoleColor$Common.reset;
-      patchConsoleOutput("".concat(gray, "[").concat(cyan, "Trace").concat(gray, "]").concat(reset, " "), console.trace);
-      patchConsoleOutput("".concat(gray, "[").concat(blue, "Log").concat(gray, "]").concat(reset, " "), console.log);
-      patchConsoleOutput("".concat(gray, "[").concat(green, "Info").concat(gray, "]").concat(reset, " "), console.info);
-      patchConsoleOutput("".concat(gray, "[").concat(magenta, "Debug").concat(gray, "]").concat(reset, " "), console.debug);
-      patchConsoleOutput("".concat(gray, "[").concat(yellow, "Warn").concat(gray, "]").concat(reset, " "), console.warn);
-      patchConsoleOutput("".concat(gray, "[").concat(red, "Error").concat(gray, "]").concat(reset, " "), console.error);
+      patchConsoleOutput("".concat(gray, "[").concat(cyan, "Trace").concat(gray, "]").concat(reset), console.trace);
+      patchConsoleOutput("".concat(gray, "[").concat(blue, "Log").concat(gray, "]").concat(reset), console.log);
+      patchConsoleOutput("".concat(gray, "[").concat(green, "Info").concat(gray, "]").concat(reset), console.info);
+      patchConsoleOutput("".concat(gray, "[").concat(magenta, "Debug").concat(gray, "]").concat(reset), console.debug);
+      patchConsoleOutput("".concat(gray, "[").concat(yellow, "Warn").concat(gray, "]").concat(reset), console.warn);
+      patchConsoleOutput("".concat(gray, "[").concat(red, "Error").concat(gray, "]").concat(reset), console.error);
     }
     ConsoleColor.patchAllConsoleOutputFunctions = patchAllConsoleOutputFunctions;
   })(exports.ConsoleColor || (exports.ConsoleColor = {}));

@@ -111,12 +111,7 @@ export namespace ConsoleColor {
      */
     export function patchConsoleOutput(prefix: string, consoleOutputFunction: OutputFunction) {
         console[consoleOutputFunction.name as OutputFunctionName] = (...allParameters) => {
-            if (allParameters.length > 0) {
-                const [firstParameter, ...restOfParameters] = allParameters;
-                consoleOutputFunction(`${prefix}${firstParameter}`, ...restOfParameters);
-            } else {
-                consoleOutputFunction(prefix);
-            }
+            consoleOutputFunction(prefix, ...allParameters);
         };
     }
 
@@ -131,12 +126,12 @@ export namespace ConsoleColor {
      */
     export function patchAllConsoleOutputFunctions() {
         const { cyan, blue, green, magenta, yellow, red, gray, reset } = ConsoleColor.Common;
-        patchConsoleOutput(`${gray}[${cyan}Trace${gray}]${reset} `, console.trace);
-        patchConsoleOutput(`${gray}[${blue}Log${gray}]${reset} `, console.log);
-        patchConsoleOutput(`${gray}[${green}Info${gray}]${reset} `, console.info);
-        patchConsoleOutput(`${gray}[${magenta}Debug${gray}]${reset} `, console.debug);
-        patchConsoleOutput(`${gray}[${yellow}Warn${gray}]${reset} `, console.warn);
-        patchConsoleOutput(`${gray}[${red}Error${gray}]${reset} `, console.error);
+        patchConsoleOutput(`${gray}[${cyan}Trace${gray}]${reset}`, console.trace);
+        patchConsoleOutput(`${gray}[${blue}Log${gray}]${reset}`, console.log);
+        patchConsoleOutput(`${gray}[${green}Info${gray}]${reset}`, console.info);
+        patchConsoleOutput(`${gray}[${magenta}Debug${gray}]${reset}`, console.debug);
+        patchConsoleOutput(`${gray}[${yellow}Warn${gray}]${reset}`, console.warn);
+        patchConsoleOutput(`${gray}[${red}Error${gray}]${reset}`, console.error);
     }
 
 }
