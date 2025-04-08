@@ -73,4 +73,23 @@ export declare namespace ConsoleColor {
     };
     function closest(color: ColorSource): string;
     const SupportedColors: Color[];
+    type OutputFunctionName = "trace" | "log" | "info" | "debug" | "warn" | "error";
+    type OutputFunction = (typeof console)[OutputFunctionName];
+    /**
+     * Adds a prefix to messages written with a `consoleOutputFunction`.
+     *
+     * @param prefix A prefix to include on outgoing console messages.
+     * @param consoleOutputFunction The console output function to affix the prefix on to.
+     */
+    function patchConsoleOutput(prefix: string, consoleOutputFunction: OutputFunction): void;
+    /**
+     * Adds appropriate prefixes to the following console output functions:
+     * * `console.trace()`
+     * * `console.log()`
+     * * `console.info()`
+     * * `console.debug()`
+     * * `console.warn()`
+     * * `console.error()`
+     */
+    function patchAllConsoleOutputFunctions(): void;
 }

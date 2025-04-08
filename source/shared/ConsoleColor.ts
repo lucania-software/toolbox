@@ -100,4 +100,43 @@ export namespace ConsoleColor {
         0XA8A8A8FF, 0XB2B2B2FF, 0XBCBCBCFF, 0XC6C6C6FF, 0XD0D0D0FF, 0XDADADAFF, 0XE4E4E4FF, 0XEEEEEEFF
     ].map((hex) => Color.from(hex));
 
+    export type OutputFunctionName = "trace" | "log" | "info" | "debug" | "warn" | "error";
+    export type OutputFunction = (typeof console)[OutputFunctionName];
+
+    /**
+     * Adds a prefix to messages written with a `consoleOutputFunction`.
+     * 
+     * @param prefix A prefix to include on outgoing console messages.
+     * @param consoleOutputFunction The console output function to affix the prefix on to.
+     */
+    export function patchConsoleOutput(prefix: string, consoleOutputFunction: OutputFunction) {
+        console[consoleOutputFunction.name as OutputFunctionName] = (...allParameters) => {
+            if (allParameters.length > 0) {
+                const [firstParameter, ...restOfParameters] = allParameters;
+                consoleOutputFunction(`${prefix}${firstParameter}`, ...restOfParameters);
+            } else {
+                consoleOutputFunction(prefix);
+            }
+        };
+    }
+
+    /**
+     * Adds appropriate prefixes to the following console output functions:
+     * * `console.trace()`
+     * * `console.log()`
+     * * `console.info()`
+     * * `console.debug()`
+     * * `console.warn()`
+     * * `console.error()`
+     */
+    export function patchAllConsoleOutputFunctions() {
+        const { cyan, blue, green, magenta, yellow, red, gray, reset } = ConsoleColor.Common;
+        patchConsoleOutput(`${gray}[${cyan}Trace${gray}]${reset} `, console.trace);
+        patchConsoleOutput(`${gray}[${blue}Log${gray}]${reset} `, console.log);
+        patchConsoleOutput(`${gray}[${green}Info${gray}]${reset} `, console.info);
+        patchConsoleOutput(`${gray}[${magenta}Debug${gray}]${reset} `, console.debug);
+        patchConsoleOutput(`${gray}[${yellow}Warn${gray}]${reset} `, console.warn);
+        patchConsoleOutput(`${gray}[${red}Error${gray}]${reset} `, console.error);
+    }
+
 }
