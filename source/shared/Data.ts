@@ -140,7 +140,6 @@ export namespace Data {
      */
     export function set<Path extends string, Value>(target: any, path: Path, value: Value): target is ObjectWithPath<Path, Value> {
         const keys = breakPath(path);
-        console.log("keys", keys);
         let key = keys.shift();
         if (key !== undefined) {
             if (keys.length === 0) {
