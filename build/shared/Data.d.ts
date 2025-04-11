@@ -64,7 +64,7 @@ export declare namespace Data {
      */
     function getOrThrow<Target, Path extends string>(target: Target, path: Path): Present<TypeAtPath<Target, Path>>;
     /**
-     * Sets a {@link value} in a {@link target} object at {@link pieces}.
+     * Sets a {@link value} in a {@link target} object at {@link keys}.
      * @param target The target object.
      * @param pieces The path to set {@link value} at.
      * @param value The value to be set.
@@ -72,7 +72,7 @@ export declare namespace Data {
      */
     function set<Path extends string, Value>(target: any, path: Path, value: Value): target is ObjectWithPath<Path, Value>;
     /**
-     * Removes a value at {@link pieces} in {@link target}.
+     * Removes a value at {@link keys} in {@link target}.
      * @param target The target object.
      * @param pieces The path of the value to remove from {@link target}.
      * @returns The removed value.
@@ -116,6 +116,36 @@ export declare namespace Data {
      * @returns A flattened version of {@link target} without any nesting.
      */
     function alternateFlatten(target: any, keys?: string[]): any;
+    /**
+     * Breaks an object path into an array of keys.
+     *
+     * @param path A path to break into its individual keys.
+     * @returns An array of keys based on `path`.
+     */
+    function breakPath(path: string): string[];
+    /**
+     * Joins an array of keys back into an object path.
+     *
+     * @param keys An array of keys to join back into a path.
+     * @returns An object path based on `keys`.
+     */
+    function joinPath(keys: string[]): string;
+    /**
+     * Escapes path dots such that they aren't interpreted as path delimiters by object manipulation functions.
+     *
+     * @param path The path to escape.
+     * @returns The path with its dots escaped.
+     */
+    function escapePathDots(path: string): string;
+    /**
+     * Undoes the escaped dots in a path.
+     *
+     * See {@link escapePathDots}
+     *
+     * @param path The path to unescape.
+     * @returns The path with its dots unescaped.
+     */
+    function unescapePathDots(path: string): string;
     /**
      * Converts a flattened object back into an object with a nested hierarchy.
      * @param target

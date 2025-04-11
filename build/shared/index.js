@@ -1326,13 +1326,13 @@
      * @returns True if {@link target} has {@link path}.
      */
     function has(target, path) {
-      var pieces = path === "" ? [] : path.split(".");
-      var key = pieces.shift();
+      var keys = breakPath(path);
+      var key = keys.shift();
       if (key === undefined) {
         return target !== undefined && target !== null;
       } else {
         if (_typeof(target) === "object" && target !== null && key in target) {
-          return has(target[key], pieces.join("."));
+          return has(target[key], joinPath(keys));
         } else {
           return false;
         }
@@ -1340,8 +1340,8 @@
     }
     Data.has = has;
     function get(target, path, fallback) {
-      var pieces = path === "" ? [] : path.split(".");
-      var key = pieces.shift();
+      var keys = breakPath(path);
+      var key = keys.shift();
       if (key === undefined) {
         if (target === undefined || target === null) {
           return fallback;
@@ -1350,7 +1350,7 @@
         }
       } else {
         if (_typeof(target) === "object" && target !== null && key in target) {
-          return Data.get(target[key], pieces.join("."), fallback);
+          return Data.get(target[key], joinPath(keys), fallback);
         } else {
           return fallback;
         }
@@ -1378,40 +1378,40 @@
     }
     Data.getOrThrow = getOrThrow;
     /**
-     * Sets a {@link value} in a {@link target} object at {@link pieces}.
+     * Sets a {@link value} in a {@link target} object at {@link keys}.
      * @param target The target object.
      * @param pieces The path to set {@link value} at.
      * @param value The value to be set.
      * @returns True if the target is updated, false otherwise.
      */
     function set(target, path, value) {
-      var pieces = path === "" ? [] : path.split(/(?<!\\)\./);
-      var key = pieces.shift();
+      var keys = breakPath(path);
+      console.log("keys", keys);
+      var key = keys.shift();
       if (key !== undefined) {
-        key = key.replaceAll("\\.", ".");
-        if (pieces.length === 0) {
+        if (keys.length === 0) {
           target[key] = value;
         } else {
           if (_typeof(target[key]) !== "object" && target[key] !== null) {
-            target[key] = pieces.length > 0 && !isNaN(parseInt(pieces[0].toString())) ? [] : {};
+            target[key] = keys.length > 0 && !isNaN(parseInt(keys[0].toString())) ? [] : {};
           }
-          Data.set(target[key], pieces.join("."), value);
+          Data.set(target[key], joinPath(keys), value);
         }
       }
       return true;
     }
     Data.set = set;
     /**
-     * Removes a value at {@link pieces} in {@link target}.
+     * Removes a value at {@link keys} in {@link target}.
      * @param target The target object.
      * @param pieces The path of the value to remove from {@link target}.
      * @returns The removed value.
      */
     function remove(target, path) {
-      var pieces = path === "" ? [] : path.split(".");
-      var key = pieces.shift();
+      var keys = breakPath(path);
+      var key = keys.shift();
       if (key !== undefined) {
-        if (pieces.length === 0) {
+        if (keys.length === 0) {
           var deleted = target[key];
           if (Array.isArray(target) && !isNaN(parseInt(key))) {
             target.splice(parseInt(key), 1);
@@ -1420,7 +1420,7 @@
           }
           return deleted;
         } else if (key in target) {
-          return Data.remove(target[key], pieces.join("."));
+          return Data.remove(target[key], joinPath(keys));
         }
       }
       return undefined;
@@ -1481,7 +1481,7 @@
       var level = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
       for (var key in target) {
         var value = target[key];
-        key = key.replaceAll(".", "\\.");
+        key = escapePathDots(key);
         var valuePath = path === "" ? key : path + "." + key;
         var finished = callback(target, value, valuePath, level);
         if (!finished && _typeof(value) === "object" && value !== null) {
@@ -1534,14 +1534,58 @@
       } else if (keys.length === 0) {
         return target;
       } else {
-        var path = keys.map(function (key) {
-          return key.replaceAll(".", "\\.");
-        }).join(".");
+        var path = joinPath(keys);
         flattened[path] = target;
       }
       return flattened;
     }
     Data.alternateFlatten = alternateFlatten;
+    /**
+     * Breaks an object path into an array of keys.
+     *
+     * @param path A path to break into its individual keys.
+     * @returns An array of keys based on `path`.
+     */
+    function breakPath(path) {
+      return path === "" ? [] : path.split(/(?<!\\)\./).map(function (key) {
+        return unescapePathDots(key);
+      });
+    }
+    Data.breakPath = breakPath;
+    /**
+     * Joins an array of keys back into an object path.
+     *
+     * @param keys An array of keys to join back into a path.
+     * @returns An object path based on `keys`.
+     */
+    function joinPath(keys) {
+      return keys.map(function (key) {
+        return escapePathDots(key);
+      }).join(".");
+    }
+    Data.joinPath = joinPath;
+    /**
+     * Escapes path dots such that they aren't interpreted as path delimiters by object manipulation functions.
+     *
+     * @param path The path to escape.
+     * @returns The path with its dots escaped.
+     */
+    function escapePathDots(path) {
+      return path.replaceAll(".", "\\.");
+    }
+    Data.escapePathDots = escapePathDots;
+    /**
+     * Undoes the escaped dots in a path.
+     *
+     * See {@link escapePathDots}
+     *
+     * @param path The path to unescape.
+     * @returns The path with its dots unescaped.
+     */
+    function unescapePathDots(path) {
+      return path.replaceAll("\\.", ".");
+    }
+    Data.unescapePathDots = unescapePathDots;
     /**
      * Converts a flattened object back into an object with a nested hierarchy.
      * @param target
