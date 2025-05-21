@@ -59,7 +59,7 @@ export namespace Text {
      * @returns A Title Case String
      */
     export function title(string: string) {
-        return string.toLowerCase().replace(/(?:^|\s)[a-z]/g, (match) => match.toUpperCase());
+        return string.toLowerCase().replace(/(?:^|\s|-)[a-z]/g, (match) => match.toUpperCase());
     }
 
     /**

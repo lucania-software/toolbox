@@ -1386,7 +1386,6 @@
      */
     function set(target, path, value) {
       var keys = breakPath(path);
-      console.log("keys", keys);
       var key = keys.shift();
       if (key !== undefined) {
         if (keys.length === 0) {
@@ -1766,16 +1765,20 @@
      * @param timeZoneName An IANA time zone name (I.E. America/Halifax)
      */
     function getTimeZoneString(timeZoneName, date) {
+      var expression = /GMT(?:\+|-)[0-9]{2}:[0-9]{2}/;
       var timeZoneFormat = new Intl.DateTimeFormat("en-US", {
         timeZoneName: "longOffset",
         timeZone: timeZoneName
       });
-      var formattedParts = timeZoneFormat.formatToParts(date);
-      var timeZoneOffsetPart = formattedParts.find(function (part) {
-        return part.type === "timeZoneName";
-      });
-      exports.Data.assert(timeZoneOffsetPart !== undefined, "Failed to find time zone offset part while getting offset of \"".concat(timeZoneName, "\"."));
-      return timeZoneOffsetPart.value;
+      var formattedString = timeZoneFormat.format(date);
+      // Doesn't appear to work on IOS on Hermes engine.
+      // const formattedParts = timeZoneFormat.formatToParts(date);
+      // const timeZoneOffsetPart = formattedParts.find((part) => part.type === "timeZoneName");
+      var match = formattedString.match(expression);
+      exports.Data.assert(match !== null, "Failed to find time zone offset part while getting offset of \"".concat(timeZoneName, "\"."));
+      var _match = _slicedToArray(match, 1),
+        timeZoneString = _match[0];
+      return timeZoneString;
     }
     TimeZone.getTimeZoneString = getTimeZoneString;
     /**
@@ -1910,7 +1913,7 @@
      * @returns A Title Case String
      */
     function title(string) {
-      return string.toLowerCase().replace(/(?:^|\s)[a-z]/g, function (match) {
+      return string.toLowerCase().replace(/(?:^|\s|-)[a-z]/g, function (match) {
         return match.toUpperCase();
       });
     }

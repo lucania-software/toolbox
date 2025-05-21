@@ -72,11 +72,16 @@ export namespace TimeZone {
      * @param timeZoneName An IANA time zone name (I.E. America/Halifax)
      */
     export function getTimeZoneString(timeZoneName: string, date: Date) {
+        const expression = /GMT(?:\+|-)[0-9]{2}:[0-9]{2}/;
         const timeZoneFormat = new Intl.DateTimeFormat("en-US", { timeZoneName: "longOffset", timeZone: timeZoneName });
-        const formattedParts = timeZoneFormat.formatToParts(date);
-        const timeZoneOffsetPart = formattedParts.find((part) => part.type === "timeZoneName");
-        Data.assert(timeZoneOffsetPart !== undefined, `Failed to find time zone offset part while getting offset of "${timeZoneName}".`);
-        return timeZoneOffsetPart.value;
+        const formattedString = timeZoneFormat.format(date);
+        // Doesn't appear to work on IOS on Hermes engine.
+        // const formattedParts = timeZoneFormat.formatToParts(date);
+        // const timeZoneOffsetPart = formattedParts.find((part) => part.type === "timeZoneName");
+        const match = formattedString.match(expression);
+        Data.assert(match !== null, `Failed to find time zone offset part while getting offset of "${timeZoneName}".`);
+        const [timeZoneString] = match;
+        return timeZoneString;
     }
 
     /**
@@ -104,6 +109,7 @@ export namespace TimeZone {
         Data.assert(offsetFrom === "GMT", `Expected time zone string to be offset from GMT, but got "${offsetFrom}".`);
         return sign * (parseInt(hour) + parseInt(minute) / 60);
     }
+
 
     /**
      * Creates a date object where `source`'s values are interpreted as describing the time in a given `timeZone`.
