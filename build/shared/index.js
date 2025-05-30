@@ -1708,53 +1708,21 @@
      * @param timeZoneName The time zone in which the parsed parts represent.
      */
     function parse(date, timeZoneName) {
-      var formatter = new Intl.DateTimeFormat("en-US", {
-        hourCycle: "h23",
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-        second: "numeric",
-        timeZoneName: "longOffset",
-        timeZone: timeZoneName
-      });
-      return formatter.formatToParts(date).reduce(function (parsed, part) {
-        switch (part.type) {
-          case "year":
-            parsed.year = parseInt(part.value);
-            break;
-          case "month":
-            parsed.month = parseInt(part.value);
-            break;
-          case "day":
-            parsed.date = parseInt(part.value);
-            break;
-          case "hour":
-            parsed.hour = parseInt(part.value);
-            break;
-          case "minute":
-            parsed.minute = parseInt(part.value);
-            break;
-          case "second":
-            parsed.second = parseInt(part.value);
-            break;
-          case "timeZoneName":
-            parsed.timeZoneName = part.value;
-            parsed.timeZoneOffset = parseTimeZoneOffset(part.value);
-            break;
-        }
-        return parsed;
-      }, {
-        year: 0,
-        month: 0,
-        date: 0,
-        hour: 0,
-        minute: 0,
-        second: 0,
-        timeZoneOffset: 0,
-        timeZoneName: ""
-      });
+      var newDate = new Date(date);
+      var currentTimeZoneOffset = -newDate.getTimezoneOffset() / 60;
+      var timeZoneString = getTimeZoneString(timeZoneName, date);
+      var timeZoneOffset = parseTimeZoneOffset(timeZoneString);
+      newDate.setUTCHours(newDate.getUTCHours() - currentTimeZoneOffset - timeZoneOffset);
+      return {
+        year: newDate.getFullYear(),
+        month: newDate.getMonth() + 1,
+        date: newDate.getDate(),
+        hour: newDate.getHours(),
+        minute: newDate.getMinutes(),
+        second: newDate.getSeconds(),
+        timeZoneOffset: timeZoneOffset,
+        timeZoneName: timeZoneString
+      };
     }
     TimeZone.parse = parse;
     /**
