@@ -208,7 +208,7 @@ export namespace Data {
             }
             return target;
         } else {
-            return { ...target };
+            return Array.isArray(target) ? [...target] as any : { ...target };
         }
     }
 

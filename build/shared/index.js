@@ -1464,7 +1464,7 @@
         }
         return target;
       } else {
-        return _objectSpread2({}, target);
+        return Array.isArray(target) ? _toConsumableArray(target) : _objectSpread2({}, target);
       }
     }
     Data.clone = clone;
